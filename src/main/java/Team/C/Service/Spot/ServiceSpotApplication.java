@@ -9,5 +9,6 @@ public class ServiceSpotApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(ServiceSpotApplication.class, args);
 	}
+	
 
 }
