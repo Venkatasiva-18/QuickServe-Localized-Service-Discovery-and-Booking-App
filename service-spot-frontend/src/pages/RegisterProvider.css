@@ -1,0 +1,240 @@
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.provider-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #FFFFFF;
+  padding: 40px 20px;
+}
+
+.provider-container h1 {
+  display: none;
+}
+
+.provider-form {
+  background: #FFFFFF;
+  border: 1px solid #DDD;
+  border-radius: 12px;
+  padding: 28px 24px;
+  max-width: 720px;
+  width: 100%;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  animation: slideInUp 0.8s ease-out;
+}
+
+.provider-form::before {
+  content: 'Become a Provider';
+  font-size: 26px;
+  font-weight: 700;
+  color: #000;
+  margin-bottom: 8px;
+  display: block;
+  animation: slideInUp 1s ease-out;
+  letter-spacing: -0.5px;
+  grid-column: 1 / -1;
+}
+
+.fieldset-box {
+  display: contents;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.fieldset-box legend {
+  display: none;
+}
+
+.provider-form label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1F2937;
+  text-transform: none;
+  letter-spacing: 0;
+  text-shadow: none;
+}
+
+.provider-form input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #D1D5DB;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #1F2937;
+  font-weight: 400;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+  background: #FFFFFF;
+}
+
+.provider-form input::placeholder {
+  color: #B0B8C1;
+  font-weight: 500;
+}
+
+.provider-form input:hover {
+  border-color: #999;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
+}
+
+.provider-form input:focus {
+  outline: none;
+  border-color: #000;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
+}
+
+.location-btn {
+  grid-column: 1 / 2;
+  padding: 5px 8px;
+  background: #000;
+  color: white;
+  border: none;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  text-transform: none;
+  letter-spacing: 0;
+  box-shadow: none;
+  margin-top: 0;
+}
+
+.location-btn:hover {
+  background: #333;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.location-btn:active {
+  transform: scale(0.98);
+}
+
+.submit-btn {
+  grid-column: 1 / -1;
+  padding: 11px 20px;
+  background: #000;
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 8px;
+  border: none;
+  text-transform: none;
+  letter-spacing: 0;
+  transition: all 0.2s ease;
+  box-shadow: none;
+  margin-top: 8px;
+}
+
+.submit-btn:hover {
+  background: #333;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.submit-btn:active {
+  transform: scale(0.98);
+}
+
+@media (max-width: 1024px) {
+  .provider-form {
+    padding: 44px 36px;
+    gap: 28px;
+  }
+
+  .fieldset-box {
+    gap: 28px 22px;
+    padding: 28px;
+  }
+}
+
+@media (max-width: 768px) {
+  .provider-container {
+    padding: 20px;
+  }
+
+  .provider-form {
+    padding: 36px 28px;
+    gap: 24px;
+    max-width: 100%;
+  }
+
+  .provider-form::before {
+    font-size: 28px;
+    margin-bottom: 12px;
+  }
+
+  .fieldset-box {
+    grid-template-columns: 1fr;
+    gap: 24px 16px;
+    padding: 24px;
+  }
+
+  .fieldset-box legend {
+    font-size: 14px;
+  }
+
+  .provider-form label {
+    font-size: 10px;
+  }
+
+  .location-btn,
+  .submit-btn {
+    padding: 14px 22px;
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .provider-container {
+    padding: 16px;
+  }
+
+  .provider-form {
+    padding: 28px 20px;
+    gap: 20px;
+  }
+
+  .provider-form::before {
+    font-size: 24px;
+    margin-bottom: 10px;
+  }
+
+  .fieldset-box {
+    padding: 20px;
+    gap: 20px 12px;
+  }
+
+  .provider-form input {
+    padding: 12px 14px;
+    font-size: 13px;
+  }
+}
