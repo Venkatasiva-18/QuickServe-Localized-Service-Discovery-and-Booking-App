@@ -1,4 +1,4 @@
-package Team.C.Service.Spot.repositery;
+package Team.C.Service.Spot.repository;
 
 import Team.C.Service.Spot.model.Provider;
 

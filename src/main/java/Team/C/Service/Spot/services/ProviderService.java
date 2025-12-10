@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 
 import Team.C.Service.Spot.model.Provider;
-import Team.C.Service.Spot.repositery.ProviderRepo;
+import Team.C.Service.Spot.repository.ProviderRepo;
 
 import java.util.Optional;
 

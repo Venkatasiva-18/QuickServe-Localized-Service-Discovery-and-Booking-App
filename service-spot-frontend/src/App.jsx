@@ -1,50 +1,51 @@
 import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
-// Components
 import Navbar from "./components/Navbar";
-import Footer from "./components/Footer";   // ✅ Added Footer
+import Footer from "./components/Footer";
 
 // Pages
 import Home from "./pages/Home";
+
+// Register
 import Register from "./pages/Register";
 import RegisterCustomer from "./pages/RegisterCustomer";
 import RegisterProvider from "./pages/RegisterProvider";
 
+// Login
 import Login from "./pages/Login";
-import LoginProvider from "./pages/LoginProvider";
 import LoginCustomer from "./pages/LoginCustomer";
+import LoginProvider from "./pages/LoginProvider";
 import LoginAdmin from "./pages/LoginAdmin";
 
+// Customer
+import CustomerDashboard from "./pages/CustomerDashboard";
+import CustomerProfile from "./pages/CustomerProfile";
+import CustomerUpdate from "./pages/CustomerUpdate";
+import CustomerBookings from "./pages/CustomerBookings";
+import BookService from "./pages/BookService";
+
+// Provider
+import ProviderProfile from "./pages/ProviderProfile";
+import ProviderUpdate from "./pages/ProviderUpdate";
+
+// Admin
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminCustomers from "./pages/AdminCustomers";
 import AdminProviders from "./pages/AdminProviders";
 
-import CustomerProfile from "./pages/CustomerProfile";
-import CustomerUpdate from "./pages/CustomerUpdate";
-
-import ProviderProfile from "./pages/ProviderProfile";
-import ProviderUpdate from "./pages/ProviderUpdate";
-
-
-
+// Other
 import SearchResults from "./pages/SearchResults";
-import Contact from "./pages/Contact";   // ✅ Added Contact Page
-
-// Optional future pages (if you decide to add)
-// import MapView from "./pages/MapView";
+import Contact from "./pages/Contact";
 
 export default function App() {
   return (
     <BrowserRouter>
-      
-      {/* Navbar is always visible */}
-      <Navbar />
 
-      {/* All routing pages */}
+      <Navbar />   {/* ⭐ NAVBAR ALWAYS VISIBLE */}
+
       <Routes>
-        
-        {/* Home */}
+
         <Route path="/" element={<Home />} />
 
         {/* Register */}
@@ -54,39 +55,33 @@ export default function App() {
 
         {/* Login */}
         <Route path="/login" element={<Login />} />
-        <Route path="/login-provider" element={<LoginProvider />} />
         <Route path="/login-customer" element={<LoginCustomer />} />
+        <Route path="/login-provider" element={<LoginProvider />} />
         <Route path="/login-admin" element={<LoginAdmin />} />
+
+        {/* Customer */}
+        <Route path="/customer-dashboard" element={<CustomerDashboard />} />
+        <Route path="/customer-profile" element={<CustomerProfile />} />
+        <Route path="/customer-update" element={<CustomerUpdate />} />
+        <Route path="/customer-bookings" element={<CustomerBookings />} />
+        <Route path="/book-service" element={<BookService />} />
+
+        {/* Provider */}
+        <Route path="/provider-profile" element={<ProviderProfile />} />
+        <Route path="/provider-update" element={<ProviderUpdate />} />
 
         {/* Admin */}
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
         <Route path="/admin-customers" element={<AdminCustomers />} />
         <Route path="/admin-providers" element={<AdminProviders />} />
 
-        {/* Customer */}
-        <Route path="/customer-profile" element={<CustomerProfile />} />
-        <Route path="/customer-update" element={<CustomerUpdate />} />
-        
-        
-        {/* Provider */}
-        <Route path="/provider-profile" element={<ProviderProfile />} />
-        <Route path="/provider-update" element={<ProviderUpdate />} />
-       
-
-        {/* Search */}
+        {/* Contact & Search */}
         <Route path="/search" element={<SearchResults />} />
+        <Route path="/contact-help" element={<Contact />} />
 
-        {/* Contact & Help */}
-        <Route path="/contact" element={<Contact />} />
-
-        {/* MapView (only if used later) */}
-        {/* <Route path="/map" element={<MapView />} /> */}
-        
       </Routes>
 
-      {/* Footer always visible */}
       <Footer />
-
     </BrowserRouter>
   );
 }
