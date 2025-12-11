@@ -1,0 +1,73 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ------------------------< Team.C:Service-Spot >-------------------------
+[INFO] Building Service-Spot 0.0.1-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.5.0:clean (default-clean) @ Service-Spot ---
+[INFO] Deleting c:\Users\Admin\Desktop\service-spot\Service-Spot\target
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ Service-Spot ---
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] Copying 3 resources from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.14.1:compile (default-compile) @ Service-Spot ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 36 source files with javac [debug parameters release 21] to target\classes
+[INFO] /c:/Users/Admin/Desktop/service-spot/Service-Spot/src/main/java/Team/C/Service/Spot/model/Article.java: Some input files use or override a deprecated API.
+[INFO] /c:/Users/Admin/Desktop/service-spot/Service-Spot/src/main/java/Team/C/Service/Spot/model/Article.java: Recompile with -Xlint:deprecation for details.
+[INFO] -------------------------------------------------------------
+[WARNING] COMPILATION WARNING : 
+[INFO] -------------------------------------------------------------
+[WARNING] /c:/Users/Admin/Desktop/service-spot/Service-Spot/src/main/java/Team/C/Service/Spot/model/Provider.java:[52,21] @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[WARNING] /c:/Users/Admin/Desktop/service-spot/Service-Spot/src/main/java/Team/C/Service/Spot/model/Article.java:[41,21] @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[WARNING] /c:/Users/Admin/Desktop/service-spot/Service-Spot/src/main/java/Team/C/Service/Spot/model/Article.java:[45,18] @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[WARNING] /c:/Users/Admin/Desktop/service-spot/Service-Spot/src/main/java/Team/C/Service/Spot/model/Article.java:[53,18] @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[WARNING] /c:/Users/Admin/Desktop/service-spot/Service-Spot/src/main/java/Team/C/Service/Spot/model/Contact.java:[38,21] @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[WARNING] /c:/Users/Admin/Desktop/service-spot/Service-Spot/src/main/java/Team/C/Service/Spot/model/Contact.java:[42,18] @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[WARNING] /c:/Users/Admin/Desktop/service-spot/Service-Spot/src/main/java/Team/C/Service/Spot/model/Contact.java:[46,18] @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[WARNING] /c:/Users/Admin/Desktop/service-spot/Service-Spot/src/main/java/Team/C/Service/Spot/model/Service.java:[49,20] @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[WARNING] /c:/Users/Admin/Desktop/service-spot/Service-Spot/src/main/java/Team/C/Service/Spot/model/Service.java:[52,21] @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[WARNING] /c:/Users/Admin/Desktop/service-spot/Service-Spot/src/main/java/Team/C/Service/Spot/model/Service.java:[55,21] @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[WARNING] /c:/Users/Admin/Desktop/service-spot/Service-Spot/src/main/java/Team/C/Service/Spot/model/Service.java:[59,18] @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[WARNING] /c:/Users/Admin/Desktop/service-spot/Service-Spot/src/main/java/Team/C/Service/Spot/model/Service.java:[63,18] @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[WARNING] /c:/Users/Admin/Desktop/service-spot/Service-Spot/src/main/java/Team/C/Service/Spot/model/FAQ.java:[32,21] @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[WARNING] /c:/Users/Admin/Desktop/service-spot/Service-Spot/src/main/java/Team/C/Service/Spot/model/FAQ.java:[35,21] @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[WARNING] /c:/Users/Admin/Desktop/service-spot/Service-Spot/src/main/java/Team/C/Service/Spot/model/FAQ.java:[39,18] @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[WARNING] /c:/Users/Admin/Desktop/service-spot/Service-Spot/src/main/java/Team/C/Service/Spot/model/FAQ.java:[43,18] @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[WARNING] /c:/Users/Admin/Desktop/service-spot/Service-Spot/src/main/java/Team/C/Service/Spot/model/Review.java:[38,18] @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[WARNING] /c:/Users/Admin/Desktop/service-spot/Service-Spot/src/main/java/Team/C/Service/Spot/model/Review.java:[42,18] @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[INFO] 18 warnings 
+[INFO] -------------------------------------------------------------
+[INFO] -------------------------------------------------------------
+[ERROR] COMPILATION ERROR : 
+[INFO] -------------------------------------------------------------
+[ERROR] /c:/Users/Admin/Desktop/service-spot/Service-Spot/src/main/java/Team/C/Service/Spot/services/ProviderService.java:[41,28] cannot find symbol
+  symbol:   method findByVerified(boolean)
+  location: variable providerRepo of type Team.C.Service.Spot.repositery.ProviderRepo
+[ERROR] /c:/Users/Admin/Desktop/service-spot/Service-Spot/src/main/java/Team/C/Service/Spot/services/ProviderService.java:[45,28] cannot find symbol
+  symbol:   method findByVerified(boolean)
+  location: variable providerRepo of type Team.C.Service.Spot.repositery.ProviderRepo
+[INFO] 2 errors 
+[INFO] -------------------------------------------------------------
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  3.256 s
+[INFO] Finished at: 2025-12-10T22:15:41+05:30
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.14.1:compile (default-compile) on project Service-Spot: Compilation failure: Compilation failure: 
+[ERROR] /c:/Users/Admin/Desktop/service-spot/Service-Spot/src/main/java/Team/C/Service/Spot/services/ProviderService.java:[41,28] cannot find symbol
+[ERROR]   symbol:   method findByVerified(boolean)
+[ERROR]   location: variable providerRepo of type Team.C.Service.Spot.repositery.ProviderRepo
+[ERROR] /c:/Users/Admin/Desktop/service-spot/Service-Spot/src/main/java/Team/C/Service/Spot/services/ProviderService.java:[45,28] cannot find symbol
+[ERROR]   symbol:   method findByVerified(boolean)
+[ERROR]   location: variable providerRepo of type Team.C.Service.Spot.repositery.ProviderRepo
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException

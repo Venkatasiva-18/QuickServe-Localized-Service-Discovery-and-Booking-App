@@ -1,0 +1,14 @@
+{
+  "name": "John Plumber",
+  "email": "john@plumbing.com",
+  "password": "password123",
+  "phone": "9876543210",
+  "doorNo": "42",
+  "addressLine": "Main St",
+  "city": "Mumbai",
+  "state": "Maharashtra",
+  "pincode": 400001,
+  "country": "India",
+  "serviceType": "Plumbing",
+  "price": 500
+}

@@ -1,0 +1,273 @@
+.book-container {
+  width: 90%;
+  max-width: 1000px;
+  margin: 30px auto;
+  padding-bottom: 40px;
+}
+
+.book-header {
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+.book-header h2 {
+  font-size: 32px;
+  color: #0a4d68;
+}
+
+.book-header p {
+  color: #555;
+  font-size: 14px;
+}
+
+.loading-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: #0a4d68;
+  font-size: 16px;
+}
+
+.loading-state p {
+  margin: 0;
+}
+
+.loading-state::before {
+  content: '';
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid #e0e0e0;
+  border-top-color: #0a4d68;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-right: 10px;
+  vertical-align: middle;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.error-state {
+  background: #fadbd8;
+  border: 1px solid #f5b7b1;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  text-align: center;
+  color: #c0392b;
+}
+
+.error-state p {
+  margin: 0 0 15px 0;
+  font-weight: 500;
+}
+
+.retry-btn {
+  background: #e74c3c;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.3s ease;
+}
+
+.retry-btn:hover {
+  background: #c0392b;
+}
+
+.book-search {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.book-search input,
+.category-dropdown {
+  padding: 10px;
+  width: 250px;
+  border-radius: 8px;
+  border: 1px solid #bbb;
+  font-size: 14px;
+}
+
+.category-dropdown {
+  cursor: pointer;
+  background: white;
+}
+
+.category-dropdown:hover {
+  border-color: #0a4d68;
+}
+
+.provider-list {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+}
+
+.provider-card {
+  padding: 18px;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  background: #fff;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.provider-card:hover {
+  transform: translateY(-4px);
+  border-color: #0a4d68;
+}
+
+.provider-card.selected {
+  border: 2px solid #0a4d68;
+  background: #eef8ff;
+}
+
+.booking-box {
+  margin-top: 30px;
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid #ddd;
+  background: #fdfdfd;
+}
+
+.booking-box label {
+  display: block;
+  margin-bottom: 15px;
+  font-weight: 600;
+}
+
+.services-header {
+  margin-bottom: 15px;
+  text-align: left;
+}
+
+.services-header h3 {
+  color: #0a4d68;
+  font-size: 18px;
+}
+
+.services-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  margin-bottom: 30px;
+}
+
+.service-card {
+  padding: 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  background: white;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.service-card:hover {
+  transform: translateY(-4px);
+  border-color: #0a4d68;
+  box-shadow: 0 4px 12px rgba(10, 77, 104, 0.15);
+}
+
+.service-card.selected {
+  border: 2px solid #0a4d68;
+  background: #f0f8ff;
+  box-shadow: 0 4px 12px rgba(10, 77, 104, 0.3);
+}
+
+.service-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  margin-bottom: 10px;
+}
+
+.service-header h4 {
+  margin: 0;
+  color: #0a4d68;
+  font-size: 16px;
+  flex: 1;
+}
+
+.category-badge {
+  background: #0a4d68;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  margin-left: 8px;
+}
+
+.service-description {
+  color: #666;
+  font-size: 13px;
+  margin-bottom: 10px;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.service-details {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  font-size: 13px;
+}
+
+.location {
+  color: #666;
+  margin: 0;
+}
+
+.price {
+  color: #0a4d68;
+  font-weight: 600;
+  margin: 0;
+}
+
+.service-rating {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  color: #555;
+  margin-bottom: 8px;
+}
+
+.provider-info {
+  padding-top: 8px;
+  border-top: 1px solid #eee;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #0a4d68;
+  font-size: 13px;
+}
+
+.no-services {
+  grid-column: 1 / -1;
+  text-align: center;
+  color: #999;
+  padding: 40px 20px;
+}
+
+.confirm-btn {
+  width: 100%;
+  padding: 12px;
+  background: #0a4d68;
+  color: white;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 600;
+}
