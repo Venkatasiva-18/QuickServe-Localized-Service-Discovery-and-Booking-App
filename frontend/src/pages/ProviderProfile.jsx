@@ -17,6 +17,8 @@ export default function ProviderProfile() {
         return res.json();
       })
       .then(data => {
+        console.log("Provider profile data:", data);
+        console.log("Profile image present:", data.profileImage ? `Yes, length: ${data.profileImage.length}` : "No");
         setProfile(data);
         setLoading(false);
       })
@@ -48,7 +50,14 @@ export default function ProviderProfile() {
     <div className="provider-profile-container">
 
       <div className="profile-icon">
-        <FaUserTie size={120} color="#0A4D68" />
+        {profile.profileImage ? (
+          <img src={`data:image/jpeg;base64,${profile.profileImage}`} alt="Profile" className="profile-image" onError={(e) => {
+            console.error("Image load error:", e);
+            e.target.src = null;
+          }} />
+        ) : (
+          <FaUserTie size={120} color="#0A4D68" />
+        )}
       </div>
 
       <h1>Provider Profile</h1>

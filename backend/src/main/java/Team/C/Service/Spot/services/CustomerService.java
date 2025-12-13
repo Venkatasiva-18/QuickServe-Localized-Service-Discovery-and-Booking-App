@@ -38,21 +38,48 @@ public class CustomerService {
     public Customer updateCustomer(Long id, Customer updatedCustomer) {
         return customerRepo.findById(id)
                 .map(existing -> {
-                    existing.setName(updatedCustomer.getName());
-                    existing.setEmail(updatedCustomer.getEmail());
+                    if (updatedCustomer.getName() != null) {
+                        existing.setName(updatedCustomer.getName());
+                    }
+                    if (updatedCustomer.getEmail() != null) {
+                        existing.setEmail(updatedCustomer.getEmail());
+                    }
                     if (updatedCustomer.getPassword() != null) {
                         existing.setPassword(updatedCustomer.getPassword());
                     }
-                    existing.setPhone(updatedCustomer.getPhone());
-                    existing.setDoorNo(updatedCustomer.getDoorNo());
-                    existing.setAddressLine(updatedCustomer.getAddressLine());
-                    existing.setCity(updatedCustomer.getCity());
-                    existing.setState(updatedCustomer.getState());
-                    existing.setPincode(updatedCustomer.getPincode());
-                    existing.setCountry(updatedCustomer.getCountry());
-                    existing.setLatitude(updatedCustomer.getLatitude());
-                    existing.setLongitude(updatedCustomer.getLongitude());
-                    existing.setVerified(updatedCustomer.getVerified());
+                    if (updatedCustomer.getPhone() != null) {
+                        existing.setPhone(updatedCustomer.getPhone());
+                    }
+                    if (updatedCustomer.getDoorNo() != null) {
+                        existing.setDoorNo(updatedCustomer.getDoorNo());
+                    }
+                    if (updatedCustomer.getAddressLine() != null) {
+                        existing.setAddressLine(updatedCustomer.getAddressLine());
+                    }
+                    if (updatedCustomer.getCity() != null) {
+                        existing.setCity(updatedCustomer.getCity());
+                    }
+                    if (updatedCustomer.getState() != null) {
+                        existing.setState(updatedCustomer.getState());
+                    }
+                    if (updatedCustomer.getPincode() != null) {
+                        existing.setPincode(updatedCustomer.getPincode());
+                    }
+                    if (updatedCustomer.getCountry() != null) {
+                        existing.setCountry(updatedCustomer.getCountry());
+                    }
+                    if (updatedCustomer.getLatitude() != null) {
+                        existing.setLatitude(updatedCustomer.getLatitude());
+                    }
+                    if (updatedCustomer.getLongitude() != null) {
+                        existing.setLongitude(updatedCustomer.getLongitude());
+                    }
+                    if (updatedCustomer.getVerified() != null) {
+                        existing.setVerified(updatedCustomer.getVerified());
+                    }
+                    if (updatedCustomer.getProfileImage() != null) {
+                        existing.setProfileImage(updatedCustomer.getProfileImage());
+                    }
                     return customerRepo.save(existing);
                 })
                 .orElse(null);

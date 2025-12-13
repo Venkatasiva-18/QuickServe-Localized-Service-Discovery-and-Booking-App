@@ -48,22 +48,51 @@ public class ProviderService {
     public Provider updateProvider(Long id, Provider updatedProvider) {
         return providerRepo.findById(id)
                 .map(provider -> {
-                    provider.setName(updatedProvider.getName());
-                    provider.setEmail(updatedProvider.getEmail());
+                    if (updatedProvider.getName() != null) {
+                        provider.setName(updatedProvider.getName());
+                    }
+                    if (updatedProvider.getEmail() != null) {
+                        provider.setEmail(updatedProvider.getEmail());
+                    }
                     if (updatedProvider.getPassword() != null) {
                         provider.setPassword(updatedProvider.getPassword());
                     }
-                    provider.setPhone(updatedProvider.getPhone());
-                    provider.setDoorNo(updatedProvider.getDoorNo());
-                    provider.setAddressLine(updatedProvider.getAddressLine());
-                    provider.setCity(updatedProvider.getCity());
-                    provider.setState(updatedProvider.getState());
-                    provider.setPincode(updatedProvider.getPincode());
-                    provider.setCountry(updatedProvider.getCountry());
-                    provider.setServiceType(updatedProvider.getServiceType());
-                    provider.setPrice(updatedProvider.getPrice());
-                    provider.setLatitude(updatedProvider.getLatitude());
-                    provider.setLongitude(updatedProvider.getLongitude());
+                    if (updatedProvider.getPhone() != null) {
+                        provider.setPhone(updatedProvider.getPhone());
+                    }
+                    if (updatedProvider.getDoorNo() != null) {
+                        provider.setDoorNo(updatedProvider.getDoorNo());
+                    }
+                    if (updatedProvider.getAddressLine() != null) {
+                        provider.setAddressLine(updatedProvider.getAddressLine());
+                    }
+                    if (updatedProvider.getCity() != null) {
+                        provider.setCity(updatedProvider.getCity());
+                    }
+                    if (updatedProvider.getState() != null) {
+                        provider.setState(updatedProvider.getState());
+                    }
+                    if (updatedProvider.getPincode() != null) {
+                        provider.setPincode(updatedProvider.getPincode());
+                    }
+                    if (updatedProvider.getCountry() != null) {
+                        provider.setCountry(updatedProvider.getCountry());
+                    }
+                    if (updatedProvider.getServiceType() != null) {
+                        provider.setServiceType(updatedProvider.getServiceType());
+                    }
+                    if (updatedProvider.getPrice() != null) {
+                        provider.setPrice(updatedProvider.getPrice());
+                    }
+                    if (updatedProvider.getLatitude() != null) {
+                        provider.setLatitude(updatedProvider.getLatitude());
+                    }
+                    if (updatedProvider.getLongitude() != null) {
+                        provider.setLongitude(updatedProvider.getLongitude());
+                    }
+                    if (updatedProvider.getProfileImage() != null) {
+                        provider.setProfileImage(updatedProvider.getProfileImage());
+                    }
                     return providerRepo.save(provider);
                 })
                 .orElse(null);
@@ -89,5 +118,33 @@ public class ProviderService {
 
     public void deleteProvider(Long id) {
         providerRepo.deleteById(id);
+    }
+
+    public List<Provider> searchProviders(String service, String area, String city) {
+        return providerRepo.searchProviders(service, area, city);
+    }
+
+    public List<Provider> findByCity(String city) {
+        return providerRepo.findByCity(city);
+    }
+
+    public List<Provider> findByServiceType(String serviceType) {
+        return providerRepo.findByServiceType(serviceType);
+    }
+
+    public List<Provider> findByServiceTypeAndCity(String serviceType, String city) {
+        return providerRepo.findByServiceTypeAndCity(serviceType, city);
+    }
+
+    public List<String> getDistinctCities() {
+        return providerRepo.findDistinctCities();
+    }
+
+    public List<String> getDistinctServiceTypes() {
+        return providerRepo.findDistinctServiceTypes();
+    }
+
+    public List<String> getDistinctAreasByCity(String city) {
+        return providerRepo.findDistinctAreasByCity(city);
     }
 }

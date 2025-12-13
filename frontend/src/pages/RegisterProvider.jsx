@@ -24,11 +24,26 @@ export default function RegisterProvider() {
     longitude: ""
   });
 
+  const [imagePreview, setImagePreview] = useState(null);
+  const [imageFile, setImageFile] = useState(null);
+
   const handleChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
     });
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+        setImageFile(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const detectLocation = () => {
@@ -79,6 +94,33 @@ export default function RegisterProvider() {
       });
 
       if (response.status === 201 || response.status === 200) {
+        const providerId = response.data.id;
+        
+        if (imageFile && typeof imageFile === 'string' && imageFile.startsWith('data:')) {
+          try {
+            const base64String = imageFile.split(',')[1];
+            console.log("Uploading image with base64 length:", base64String.length);
+            
+            const formData = new FormData();
+            const binaryString = atob(base64String);
+            const bytes = new Uint8Array(binaryString.length);
+            for (let i = 0; i < binaryString.length; i++) {
+              bytes[i] = binaryString.charCodeAt(i);
+            }
+            const blob = new Blob([bytes], { type: 'image/png' });
+            formData.append('file', blob, 'profile.png');
+            
+            const imgResponse = await axios.post(`http://localhost:8080/api/provider/${providerId}/upload-image`, formData, {
+              headers: {
+                "Content-Type": "multipart/form-data"
+              }
+            });
+            console.log("Image upload successful:", imgResponse.data);
+          } catch (imgErr) {
+            console.error("Image upload failed:", imgErr.response?.data || imgErr.message);
+          }
+        }
+        
         alert("Provider Registration Successful!");
         navigate("/login-provider");
       }
@@ -94,6 +136,39 @@ export default function RegisterProvider() {
       <h1>Provider Registration</h1>
 
       <form className="provider-form" onSubmit={handleSubmit}>
+
+        {/* Profile Picture */}
+        <div className="image-upload-section">
+          <label className="image-label">Profile Picture (Optional)</label>
+          <div className="image-upload-container">
+            {imagePreview ? (
+              <div className="image-preview-circle">
+                <img src={imagePreview} alt="Preview" className="circle-image" />
+                <button 
+                  type="button" 
+                  className="remove-circle-btn"
+                  onClick={() => {
+                    setImagePreview(null);
+                    setImageFile(null);
+                  }}
+                  title="Remove image"
+                >
+                  ✕
+                </button>
+              </div>
+            ) : (
+              <div className="upload-circle-placeholder">
+                <span className="circle-upload-icon">📷</span>
+              </div>
+            )}
+            <input 
+              type="file" 
+              accept="image/*" 
+              onChange={handleImageChange}
+              className="image-input"
+            />
+          </div>
+        </div>
 
         {/* PERSONAL DETAILS */}
         <fieldset className="fieldset-box">

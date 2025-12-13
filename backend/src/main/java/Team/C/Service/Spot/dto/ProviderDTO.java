@@ -27,4 +27,5 @@ public class ProviderDTO {
     private Double longitude;
     private Boolean verified;
     private String password;
+    private String profileImage;
 }

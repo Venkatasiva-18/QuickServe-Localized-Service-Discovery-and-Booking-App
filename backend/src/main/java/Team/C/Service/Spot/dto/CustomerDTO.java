@@ -24,6 +24,6 @@ public class CustomerDTO {
     private Double latitude;
     private Double longitude;
     private Boolean verified;
-    
     private String password;
+    private String profileImage;
 }

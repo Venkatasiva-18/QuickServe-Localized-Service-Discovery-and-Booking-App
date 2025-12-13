@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import "./SearchResults.css";
 
 export default function SearchResults() {
   
   const location = useLocation();
+  const navigate = useNavigate();
 
   const service = new URLSearchParams(location.search).get("service") || "";
   const area = new URLSearchParams(location.search).get("area") || "";
@@ -14,20 +15,44 @@ export default function SearchResults() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const handleBookNow = (provider) => {
+    if (!localStorage.getItem("loggedIn")) {
+      alert("Please login as a customer to book a service.");
+      navigate("/login-customer");
+      return;
+    }
+    
+    navigate("/book-service", { 
+      state: { preSelectedService: provider, searchCity: city }
+    });
+  };
+
   useEffect(() => {
-    fetch(`http://localhost:8080/api/search?service=${service}&area=${area}&city=${city}`)
+    const searchParams = new URLSearchParams();
+    if (service.trim()) searchParams.append('service', service);
+    if (area.trim()) searchParams.append('area', area);
+    if (city.trim()) searchParams.append('city', city);
+
+    const queryString = searchParams.toString();
+    const url = `http://localhost:8080/api/search${queryString ? '?' + queryString : ''}`;
+    
+    console.log("Fetching from:", url);
+    
+    fetch(url)
       .then(res => {
-        if (!res.ok) throw new Error("Failed to fetch search results");
+        console.log("Response status:", res.status);
+        if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to fetch search results`);
         return res.json();
       })
       .then(data => {
+        console.log("Received data:", data);
         setProviders(Array.isArray(data) ? data : []);
         setError(null);
         setLoading(false);
       })
       .catch(error => {
-        console.log("Error loading search data", error);
-        setError("Unable to load search results. Backend server may not be running.");
+        console.error("Error loading search data:", error);
+        setError(`Error: ${error.message}. Make sure the backend server is running on port 8080.`);
         setProviders([]);
         setLoading(false);
       });
@@ -91,7 +116,7 @@ export default function SearchResults() {
 
               <div className="result-card-footer">
                 <span className="price-tag">{p.price ? `₹${p.price}` : "Price on request"}</span>
-                <button type="button">Book Now</button>
+                <button type="button" onClick={() => handleBookNow(p)}>Book Now</button>
               </div>
             </article>
           ))}

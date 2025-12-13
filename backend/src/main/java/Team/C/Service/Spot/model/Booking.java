@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 import java.time.LocalDateTime;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -52,9 +53,16 @@ public class Booking {
     @Column(nullable = true)
     private String notes;
     
+    @Column(nullable = false, columnDefinition = "DECIMAL(10,2) DEFAULT 0.00")
+    private Double totalAmount = 0.0;
+    
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
+    
+    @UpdateTimestamp
+    @Column(nullable = false)
+    private LocalDateTime updatedAt;
     
     @Column(nullable = true)
     private LocalDateTime completedAt;

@@ -29,6 +29,7 @@ import BookService from "./pages/BookService";
 import ProviderProfile from "./pages/ProviderProfile";
 import ProviderUpdate from "./pages/ProviderUpdate";
 import ProviderDashboard from "./pages/ProviderDashboard";
+import ProviderBookings from "./pages/ProviderBookings";
 
 // Admin
 import AdminDashboard from "./pages/AdminDashboard";
@@ -71,6 +72,7 @@ export default function App() {
         <Route path="/provider-profile" element={<ProviderProfile />} />
         <Route path="/provider-update" element={<ProviderUpdate />} />
         <Route path="/provider-dashboard" element={<ProviderDashboard />} />
+        <Route path="/provider-bookings" element={<ProviderBookings />} />
 
         {/* Admin */}
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
@@ -79,6 +81,7 @@ export default function App() {
 
         {/* Contact & Search */}
         <Route path="/search" element={<SearchResults />} />
+        <Route path="/contact" element={<Contact />} />
         <Route path="/contact-help" element={<Contact />} />
 
       </Routes>

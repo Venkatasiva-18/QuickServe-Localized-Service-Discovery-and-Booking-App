@@ -69,18 +69,13 @@ public class Provider {
     private String role = "PROVIDER";
 
     @CreationTimestamp
-    @Column(nullable=true, updatable=false)
+    @Column(name = "created_at", nullable=true, updatable=false)
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
-    @Column(nullable=true)
+    @Column(name = "updated_at", nullable=true)
     private LocalDateTime updatedAt;
 
-   
-
-
-
-
-
-    
+    @Column(nullable=true, columnDefinition="LONGBLOB")
+    private byte[] profileImage;
 }

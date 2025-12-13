@@ -48,14 +48,30 @@ public class ServiceService {
     public Service updateService(Long id, Service updatedService) {
         return serviceRepo.findById(id)
                 .map(service -> {
-                    service.setName(updatedService.getName());
-                    service.setDescription(updatedService.getDescription());
-                    service.setCategory(updatedService.getCategory());
-                    service.setPrice(updatedService.getPrice());
-                    service.setCity(updatedService.getCity());
-                    service.setState(updatedService.getState());
-                    service.setPincode(updatedService.getPincode());
-                    service.setIsActive(updatedService.getIsActive());
+                    if (updatedService.getName() != null) {
+                        service.setName(updatedService.getName());
+                    }
+                    if (updatedService.getDescription() != null) {
+                        service.setDescription(updatedService.getDescription());
+                    }
+                    if (updatedService.getCategory() != null) {
+                        service.setCategory(updatedService.getCategory());
+                    }
+                    if (updatedService.getPrice() != null) {
+                        service.setPrice(updatedService.getPrice());
+                    }
+                    if (updatedService.getCity() != null) {
+                        service.setCity(updatedService.getCity());
+                    }
+                    if (updatedService.getState() != null) {
+                        service.setState(updatedService.getState());
+                    }
+                    if (updatedService.getPincode() != null) {
+                        service.setPincode(updatedService.getPincode());
+                    }
+                    if (updatedService.getIsActive() != null) {
+                        service.setIsActive(updatedService.getIsActive());
+                    }
                     service.setUpdatedAt(new java.util.Date());
                     return serviceRepo.save(service);
                 })

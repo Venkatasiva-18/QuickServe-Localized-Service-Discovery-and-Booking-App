@@ -1,28 +1,75 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import "./Contact.css";
-import { FaEnvelope, FaPhone, FaMapMarkerAlt } from "react-icons/fa";
+import { FaEnvelope, FaPhone, FaMapMarkerAlt, FaHome } from "react-icons/fa";
 
 export default function Contact() {
-
+  const navigate = useNavigate();
+  
   const [form, setForm] = useState({
     name: "",
     email: "",
+    phone: "",
+    subject: "",
     message: ""
   });
+
+  const [loading, setLoading] = useState(false);
+  const [submitMessage, setSubmitMessage] = useState("");
+  const [submitError, setSubmitError] = useState("");
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    alert("Message submitted! We will contact you soon.");
+    setLoading(true);
+    setSubmitMessage("");
+    setSubmitError("");
+
+    try {
+      const payload = {
+        name: form.name,
+        email: form.email,
+        phone: form.phone,
+        subject: form.subject,
+        message: form.message,
+        isResolved: false
+      };
+
+      await axios.post("http://localhost:8080/api/contact", payload);
+      
+      setSubmitMessage("✓ Message submitted successfully! We will contact you soon.");
+      setForm({
+        name: "",
+        email: "",
+        phone: "",
+        subject: "",
+        message: ""
+      });
+
+      setTimeout(() => {
+        setSubmitMessage("");
+      }, 5000);
+    } catch (error) {
+      console.error("Error submitting message:", error);
+      setSubmitError("Failed to submit message. Please try again later.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="contact-container">
 
-      <h1>Contact & Help</h1>
+      <div className="contact-header">
+        <h1>Contact & Help</h1>
+        <button className="home-btn" onClick={() => navigate("/")} title="Back to Home">
+          <FaHome /> Home
+        </button>
+      </div>
 
       {/* Contact Details */}
       <div className="contact-info">
@@ -39,33 +86,63 @@ export default function Contact() {
         <fieldset className="contact-fieldset">
           <legend>Contact Form</legend>
 
-          <label>Your Name</label>
+          {submitMessage && <div className="success-message">{submitMessage}</div>}
+          {submitError && <div className="error-message">{submitError}</div>}
+
+          <label>Your Name *</label>
           <input 
             type="text"
             name="name"
             value={form.name}
             onChange={handleChange}
             required
+            disabled={loading}
           />
 
-          <label>Your Email</label>
+          <label>Your Email *</label>
           <input 
             type="email"
             name="email"
             value={form.email}
             onChange={handleChange}
             required
+            disabled={loading}
           />
 
-          <label>Your Message</label>
+          <label>Your Phone</label>
+          <input 
+            type="tel"
+            name="phone"
+            value={form.phone}
+            onChange={handleChange}
+            disabled={loading}
+            placeholder="e.g., 9876543210"
+          />
+
+          <label>Subject *</label>
+          <input 
+            type="text"
+            name="subject"
+            value={form.subject}
+            onChange={handleChange}
+            required
+            disabled={loading}
+            placeholder="e.g., Account Issue, Booking Problem"
+          />
+
+          <label>Your Message *</label>
           <textarea 
             name="message"
             value={form.message}
             onChange={handleChange}
             required
+            disabled={loading}
+            rows="5"
           ></textarea>
 
-          <button type="submit">Send Message</button>
+          <button type="submit" disabled={loading}>
+            {loading ? "Sending..." : "Send Message"}
+          </button>
 
         </fieldset>
 

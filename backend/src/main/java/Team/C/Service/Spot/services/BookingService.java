@@ -24,19 +24,20 @@ public class BookingService {
     private final ServiceRepo serviceRepo;
     
     public Booking createBooking(Booking booking) {
-        if (booking.getCustomer() != null && booking.getCustomer().getId() != null) {
-            Optional<Customer> customer = customerRepo.findById(booking.getCustomer().getId());
-            customer.ifPresent(booking::setCustomer);
+        if (booking == null) {
+            throw new IllegalArgumentException("Booking cannot be null");
         }
         
-        if (booking.getProvider() != null && booking.getProvider().getId() != null) {
-            Optional<Provider> provider = providerRepo.findById(booking.getProvider().getId());
-            provider.ifPresent(booking::setProvider);
+        if (booking.getCustomer() == null || booking.getCustomer().getId() == null) {
+            throw new IllegalArgumentException("Customer is required");
         }
         
-        if (booking.getService() != null && booking.getService().getId() != null) {
-            Optional<Team.C.Service.Spot.model.Service> service = serviceRepo.findById(booking.getService().getId());
-            service.ifPresent(booking::setService);
+        if (booking.getProvider() == null || booking.getProvider().getId() == null) {
+            throw new IllegalArgumentException("Provider is required");
+        }
+        
+        if (booking.getService() == null || booking.getService().getId() == null) {
+            throw new IllegalArgumentException("Service is required");
         }
         
         return bookingRepo.save(booking);
@@ -76,6 +77,10 @@ public class BookingService {
                     return bookingRepo.save(booking);
                 })
                 .orElse(null);
+    }
+
+    public Booking updateBookingDirect(Booking booking) {
+        return bookingRepo.save(booking);
     }
     
     public Booking cancelBooking(Long id) {

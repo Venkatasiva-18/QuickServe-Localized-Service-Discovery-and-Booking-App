@@ -37,6 +37,57 @@
   animation: fadeInDown 0.8s ease-out;
 }
 
+.profile-section {
+  text-align: center;
+  margin-bottom: 32px;
+  padding-bottom: 24px;
+  border-bottom: 2px solid #E5E7EB;
+}
+
+.profile-image-area {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 16px;
+  animation: fadeInDown 0.8s ease-out;
+}
+
+.profile-image {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border: 3px solid #E5E7EB;
+}
+
+.image-upload-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.upload-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1F2937;
+}
+
+.image-input {
+  padding: 8px 16px;
+  border: 2px dashed #3B82F6;
+  border-radius: 8px;
+  cursor: pointer;
+  background: #F0F9FF;
+  font-size: 13px;
+  transition: all 0.2s ease;
+}
+
+.image-input:hover {
+  border-color: #2563EB;
+  background: #E0F2FE;
+}
+
 .update-container h1 {
   text-align: center;
   color: #000;

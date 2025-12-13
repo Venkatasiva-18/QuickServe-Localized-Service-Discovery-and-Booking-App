@@ -309,6 +309,107 @@
   }
 }
 
+.image-upload-section {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 8px;
+  animation: slideInUp 0.8s ease-out;
+  align-items: center;
+  text-align: center;
+}
+
+.image-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #0F172A;
+  margin-bottom: 2px;
+  width: 100%;
+}
+
+.image-upload-container {
+  position: relative;
+  width: 45px;
+  height: 45px;
+  cursor: pointer;
+}
+
+.image-upload-container:hover .upload-circle-placeholder {
+  border-color: #3B82F6;
+  background: #FFFFFF;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+}
+
+.upload-circle-placeholder {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border: 2px dashed rgba(59, 130, 246, 0.4);
+  border-radius: 50%;
+  background: linear-gradient(135deg, #F8FAFC 0%, #F0F9FF 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.circle-upload-icon {
+  font-size: 20px;
+  display: block;
+}
+
+.image-preview-circle {
+  position: relative;
+  width: 45px;
+  height: 45px;
+}
+
+.circle-image {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
+  border: 2px solid rgba(59, 130, 246, 0.4);
+}
+
+.remove-circle-btn {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 4px rgba(239, 68, 68, 0.3);
+}
+
+.remove-circle-btn:hover {
+  transform: scale(1.15);
+  box-shadow: 0 2px 6px rgba(239, 68, 68, 0.4);
+}
+
+.image-input {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  opacity: 0;
+  cursor: pointer;
+  border-radius: 50%;
+}
+
 @media (max-width: 480px) {
   .customer-container {
     padding: 16px;

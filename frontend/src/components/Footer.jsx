@@ -20,17 +20,17 @@ export default function Footer() {
         <h4>For Customers</h4>
         <ul>
           <li><a href="/">Browse Services</a></li>
-          <li><a href="/register">Register as Customer</a></li>
+          <li><a href="/register-customer">Register as Customer</a></li>
           <li><a href="/search">Search Services</a></li>
-          <li><a href="/contact">Become a Partner</a></li>
+          <li><a href="/contact">Support & Help</a></li>
         </ul>
       </div>
 
       <div className="footer-section">
         <h4>For Service Providers</h4>
         <ul>
-          <li><a href="/register">Register as Provider</a></li>
-          <li><a href="/provider-profile">Manage Services</a></li>
+          <li><a href="/register-provider">Register as Provider</a></li>
+          <li><a href="/login-provider">Provider Dashboard</a></li>
           <li><a href="/contact">Pricing & Rates</a></li>
           <li><a href="/contact">Provider Support</a></li>
         </ul>
@@ -42,7 +42,7 @@ export default function Footer() {
           <li><a href="/contact">About Us</a></li>
           <li><a href="/contact">Privacy Policy</a></li>
           <li><a href="/contact">Terms & Conditions</a></li>
-          <li><a href="/contact">Blog</a></li>
+          <li><a href="/contact">Help & Support</a></li>
         </ul>
       </div>
 
@@ -60,11 +60,11 @@ export default function Footer() {
         <div className="footer-bottom-content">
           <p>&copy; {new Date().getFullYear()} ServiceSpot. All Rights Reserved.</p>
           <div className="footer-links">
-            <a href="#privacy">Privacy</a>
+            <a href="/contact">Privacy Policy</a>
             <span className="divider">•</span>
-            <a href="#terms">Terms</a>
+            <a href="/contact">Terms & Conditions</a>
             <span className="divider">•</span>
-            <a href="#cookies">Cookies</a>
+            <a href="/contact">Cookie Policy</a>
           </div>
         </div>
       </div>

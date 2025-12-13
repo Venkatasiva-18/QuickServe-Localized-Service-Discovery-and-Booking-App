@@ -130,18 +130,26 @@ public class ServiceController {
     
     @PutMapping("/{id}")
     public ResponseEntity<?> updateService(@PathVariable Long id, @RequestBody Service service) {
-        Service updated = serviceService.updateService(id, service);
-        if (updated != null) {
-            return ResponseEntity.ok(convertToDTO(updated));
+        try {
+            Service updated = serviceService.updateService(id, service);
+            if (updated != null) {
+                return ResponseEntity.ok(convertToDTO(updated));
+            }
+            return ResponseEntity.status(404).body("Service not found");
+        } catch (Exception e) {
+            return ResponseEntity.status(400).body("Error updating service: " + e.getMessage());
         }
-        return ResponseEntity.notFound().build();
     }
     
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteService(@PathVariable Long id) {
-        if (serviceService.deleteService(id)) {
-            return ResponseEntity.ok("Service deleted successfully");
+        try {
+            if (serviceService.deleteService(id)) {
+                return ResponseEntity.ok("Service deleted successfully");
+            }
+            return ResponseEntity.status(404).body("Service not found");
+        } catch (Exception e) {
+            return ResponseEntity.status(400).body("Error deleting service: " + e.getMessage());
         }
-        return ResponseEntity.notFound().build();
     }
 }

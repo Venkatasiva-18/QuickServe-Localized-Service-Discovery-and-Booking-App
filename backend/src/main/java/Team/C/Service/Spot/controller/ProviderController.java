@@ -21,6 +21,14 @@ public class ProviderController {
     private final ProviderService providerService;
 
     private ProviderDTO mapToDTO(Provider provider) {
+        String profileImageBase64 = null;
+        if (provider.getProfileImage() != null) {
+            System.out.println("Converting image to base64. Provider ID: " + provider.getId() + ", Image bytes: " + provider.getProfileImage().length);
+            profileImageBase64 = java.util.Base64.getEncoder().encodeToString(provider.getProfileImage());
+            System.out.println("Converted to base64. Length: " + profileImageBase64.length());
+        } else {
+            System.out.println("No image found for provider ID: " + provider.getId());
+        }
         return ProviderDTO.builder()
                 .id(provider.getId())
                 .name(provider.getName())
@@ -37,12 +45,21 @@ public class ProviderController {
                 .latitude(provider.getLatitude())
                 .longitude(provider.getLongitude())
                 .verified(provider.getVerified())
+                .profileImage(profileImageBase64)
                 .build();
     }
 
     private Provider mapToEntity(ProviderDTO dto) {
         Double latitude = dto.getLatitude() != null ? dto.getLatitude() : null;
         Double longitude = dto.getLongitude() != null ? dto.getLongitude() : null;
+        byte[] profileImageBytes = null;
+        if (dto.getProfileImage() != null && !dto.getProfileImage().isEmpty()) {
+            try {
+                profileImageBytes = java.util.Base64.getDecoder().decode(dto.getProfileImage());
+            } catch (IllegalArgumentException e) {
+                profileImageBytes = null;
+            }
+        }
         return Provider.builder()
                 .name(dto.getName())
                 .email(dto.getEmail())
@@ -60,6 +77,7 @@ public class ProviderController {
                 .longitude(longitude)
                 .verified(dto.getVerified() != null ? dto.getVerified() : false)
                 .role("PROVIDER")
+                .profileImage(profileImageBytes)
                 .build();
     }
 
@@ -132,6 +150,23 @@ public class ProviderController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @GetMapping("/{id}/image-check")
+    public ResponseEntity<?> checkImage(@PathVariable Long id) {
+        return providerService.getProviderById(id)
+                .map(provider -> {
+                    java.util.Map<String, Object> info = new java.util.HashMap<>();
+                    info.put("providerId", provider.getId());
+                    info.put("name", provider.getName());
+                    info.put("hasImage", provider.getProfileImage() != null);
+                    if (provider.getProfileImage() != null) {
+                        info.put("imageSizeBytes", provider.getProfileImage().length);
+                    }
+                    System.out.println("Image check for provider " + id + ": " + info);
+                    return ResponseEntity.ok(info);
+                })
+                .orElse(ResponseEntity.notFound().build());
+    }
+
     @GetMapping
     public ResponseEntity<List<ProviderDTO>> getAllProviders() {
         List<Provider> providers = providerService.getAllProviders();
@@ -193,5 +228,40 @@ public class ProviderController {
     public ResponseEntity<?> deleteProvider(@PathVariable Long id) {
         providerService.deleteProvider(id);
         return ResponseEntity.ok("Provider deleted successfully");
+    }
+
+    @PostMapping("/{id}/upload-image")
+    public ResponseEntity<?> uploadProfileImage(@PathVariable Long id, @RequestParam("file") org.springframework.web.multipart.MultipartFile file) {
+        try {
+            System.out.println("Upload image request for provider: " + id);
+            System.out.println("Received file: " + (file != null && !file.isEmpty() ? "Yes, size: " + file.getSize() : "No"));
+            
+            if (file == null || file.isEmpty()) {
+                System.out.println("No file provided");
+                return ResponseEntity.badRequest().body("No file provided");
+            }
+            
+            byte[] imageBytes = file.getBytes();
+            System.out.println("Image bytes received: " + imageBytes.length);
+            
+            Provider provider = providerService.getProviderById(id)
+                    .orElseThrow(() -> new Exception("Provider not found"));
+            
+            System.out.println("Before update - Provider has image: " + (provider.getProfileImage() != null));
+            provider.setProfileImage(imageBytes);
+            System.out.println("After setting - Provider has image: " + (provider.getProfileImage() != null ? "Yes, " + provider.getProfileImage().length + " bytes" : "No"));
+            
+            Provider updated = providerService.updateProvider(id, provider);
+            System.out.println("After save - Updated provider has image: " + (updated.getProfileImage() != null ? "Yes, " + updated.getProfileImage().length + " bytes" : "No"));
+            
+            return ResponseEntity.ok(mapToDTO(updated));
+        } catch (Exception e) {
+            System.out.println("Upload error: " + e.getMessage());
+            e.printStackTrace();
+            java.util.Map<String, Object> error = new java.util.HashMap<>();
+            error.put("error", e.getClass().getSimpleName());
+            error.put("message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+        }
     }
 }

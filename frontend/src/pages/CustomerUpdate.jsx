@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import "./CustomerUpdate.css";
-import { FaUserEdit, FaMapMarkerAlt } from "react-icons/fa";
+import { FaUserEdit, FaMapMarkerAlt, FaUserCircle } from "react-icons/fa";
 
 export default function CustomerUpdate() {
 
@@ -21,13 +21,33 @@ export default function CustomerUpdate() {
     longitude: ""
   });
 
+  const [imagePreview, setImagePreview] = useState(null);
+  const [imageFile, setImageFile] = useState(null);
+
   // Fetch existing details
   useEffect(() => {
     fetch(`http://localhost:8080/api/customer/${customerId}`)
       .then(res => res.json())
-      .then(data => setForm(data))
+      .then(data => {
+        setForm(data);
+        if (data.profileImage) {
+          setImagePreview(`data:image/jpeg;base64,${data.profileImage}`);
+        }
+      })
       .catch(err => console.log("Error fetching profile:", err));
   }, []);
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+        setImageFile(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   // Update form values
   const handleChange = (e) => {
@@ -54,6 +74,29 @@ export default function CustomerUpdate() {
 
     try {
       await axios.put(`http://localhost:8080/api/customer/${customerId}`, form);
+      
+      if (imageFile && typeof imageFile === 'string' && imageFile.startsWith('data:')) {
+        try {
+          const base64String = imageFile.split(',')[1];
+          const formData = new FormData();
+          const binaryString = atob(base64String);
+          const bytes = new Uint8Array(binaryString.length);
+          for (let i = 0; i < binaryString.length; i++) {
+            bytes[i] = binaryString.charCodeAt(i);
+          }
+          const blob = new Blob([bytes], { type: 'image/jpeg' });
+          formData.append('file', blob, 'profile.jpg');
+          
+          await axios.post(`http://localhost:8080/api/customer/${customerId}/upload-image`, formData, {
+            headers: {
+              "Content-Type": "multipart/form-data"
+            }
+          });
+        } catch (imgErr) {
+          console.warn("Image upload failed:", imgErr.message);
+        }
+      }
+      
       alert("Profile Updated Successfully!");
     } catch (err) {
       alert("Update Failed!");
@@ -64,8 +107,23 @@ export default function CustomerUpdate() {
   return (
     <div className="update-container">
 
-      <div className="update-icon">
-        <FaUserEdit size={120} color="#0A4D68" />
+      <div className="profile-section">
+        <div className="profile-image-area">
+          {imagePreview ? (
+            <img src={imagePreview} alt="Profile" className="profile-image" />
+          ) : (
+            <FaUserCircle size={140} color="#0A4D68" />
+          )}
+        </div>
+        <div className="image-upload-wrapper">
+          <label className="upload-label">Update Profile Picture</label>
+          <input 
+            type="file" 
+            accept="image/*" 
+            onChange={handleImageChange}
+            className="image-input"
+          />
+        </div>
       </div>
 
       <h1>Update Customer Details</h1>

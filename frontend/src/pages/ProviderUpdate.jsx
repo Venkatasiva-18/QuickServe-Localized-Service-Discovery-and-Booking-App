@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import "./ProviderUpdate.css";
-import { FaUserEdit, FaMapMarkerAlt } from "react-icons/fa";
+import { FaUserEdit, FaMapMarkerAlt, FaUserTie } from "react-icons/fa";
 
 export default function ProviderUpdate() {
 
@@ -22,13 +22,33 @@ export default function ProviderUpdate() {
     longitude: ""
   });
 
+  const [imagePreview, setImagePreview] = useState(null);
+  const [imageFile, setImageFile] = useState(null);
+
   // Load provider details
   useEffect(() => {
     fetch(`http://localhost:8080/api/provider/${providerId}`)
       .then(res => res.json())
-      .then(data => setForm(data))
+      .then(data => {
+        setForm(data);
+        if (data.profileImage) {
+          setImagePreview(`data:image/jpeg;base64,${data.profileImage}`);
+        }
+      })
       .catch(err => console.log("Error fetching provider profile:", err));
   }, []);
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+        setImageFile(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   // Update form values
   const handleChange = (e) => {
@@ -55,6 +75,29 @@ export default function ProviderUpdate() {
 
     try {
       await axios.put(`http://localhost:8080/api/provider/${providerId}`, form);
+      
+      if (imageFile && typeof imageFile === 'string' && imageFile.startsWith('data:')) {
+        try {
+          const base64String = imageFile.split(',')[1];
+          const formData = new FormData();
+          const binaryString = atob(base64String);
+          const bytes = new Uint8Array(binaryString.length);
+          for (let i = 0; i < binaryString.length; i++) {
+            bytes[i] = binaryString.charCodeAt(i);
+          }
+          const blob = new Blob([bytes], { type: 'image/jpeg' });
+          formData.append('file', blob, 'profile.jpg');
+          
+          await axios.post(`http://localhost:8080/api/provider/${providerId}/upload-image`, formData, {
+            headers: {
+              "Content-Type": "multipart/form-data"
+            }
+          });
+        } catch (imgErr) {
+          console.warn("Image upload failed:", imgErr.message);
+        }
+      }
+      
       alert("Provider Profile Updated Successfully!");
     } catch (err) {
       alert("Update Failed!");
@@ -65,9 +108,23 @@ export default function ProviderUpdate() {
   return (
     <div className="provider-update-container">
 
-      {/* ICON */}
-      <div className="update-icon">
-        <FaUserEdit size={120} color="#0A4D68" />
+      <div className="profile-section">
+        <div className="profile-image-area">
+          {imagePreview ? (
+            <img src={imagePreview} alt="Profile" className="profile-image" />
+          ) : (
+            <FaUserTie size={140} color="#0A4D68" />
+          )}
+        </div>
+        <div className="image-upload-wrapper">
+          <label className="upload-label">Update Profile Picture</label>
+          <input 
+            type="file" 
+            accept="image/*" 
+            onChange={handleImageChange}
+            className="image-input"
+          />
+        </div>
       </div>
 
       <h1>Update Provider Details</h1>

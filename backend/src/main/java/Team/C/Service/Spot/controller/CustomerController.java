@@ -22,6 +22,14 @@ public class CustomerController {
     private final CustomerService customerService;
 
     private CustomerDTO mapToDTO(Customer customer) {
+        String profileImageBase64 = null;
+        if (customer.getProfileImage() != null) {
+            System.out.println("Converting image to base64. Customer ID: " + customer.getId() + ", Image bytes: " + customer.getProfileImage().length);
+            profileImageBase64 = java.util.Base64.getEncoder().encodeToString(customer.getProfileImage());
+            System.out.println("Converted to base64. Length: " + profileImageBase64.length());
+        } else {
+            System.out.println("No image found for customer ID: " + customer.getId());
+        }
         return CustomerDTO.builder()
                 .id(customer.getId())
                 .name(customer.getName())
@@ -36,6 +44,7 @@ public class CustomerController {
                 .latitude(customer.getLatitude())
                 .longitude(customer.getLongitude())
                 .verified(customer.getVerified())
+                .profileImage(profileImageBase64)
                 .build();
     }
 
@@ -52,6 +61,15 @@ public class CustomerController {
         Double latitude = dto.getLatitude() != null ? dto.getLatitude() : 0.0;
         Double longitude = dto.getLongitude() != null ? dto.getLongitude() : 0.0;
         
+        byte[] profileImageBytes = null;
+        if (dto.getProfileImage() != null && !dto.getProfileImage().isEmpty()) {
+            try {
+                profileImageBytes = java.util.Base64.getDecoder().decode(dto.getProfileImage());
+            } catch (IllegalArgumentException e) {
+                profileImageBytes = null;
+            }
+        }
+        
         return Customer.builder()
                 .name(dto.getName())
                 .email(dto.getEmail())
@@ -67,6 +85,7 @@ public class CustomerController {
                 .verified(dto.getVerified() != null ? dto.getVerified() : false)
                 .password(dto.getPassword())
                 .role("CUSTOMER")
+                .profileImage(profileImageBytes)
                 .build();
     }
 
@@ -120,6 +139,23 @@ public class CustomerController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @GetMapping("/{id}/image-check")
+    public ResponseEntity<?> checkImage(@PathVariable Long id) {
+        return customerService.getCustomerById(id)
+                .map(customer -> {
+                    Map<String, Object> info = new HashMap<>();
+                    info.put("customerId", customer.getId());
+                    info.put("name", customer.getName());
+                    info.put("hasImage", customer.getProfileImage() != null);
+                    if (customer.getProfileImage() != null) {
+                        info.put("imageSizeBytes", customer.getProfileImage().length);
+                    }
+                    System.out.println("Image check for customer " + id + ": " + info);
+                    return ResponseEntity.ok(info);
+                })
+                .orElse(ResponseEntity.notFound().build());
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<?> updateCustomer(@PathVariable Long id, @RequestBody CustomerDTO dto) {
         try {
@@ -151,5 +187,40 @@ public class CustomerController {
     public ResponseEntity<?> deleteCustomer(@PathVariable Long id) {
         customerService.deleteCustomer(id);
         return ResponseEntity.ok("Customer deleted successfully");
+    }
+
+    @PostMapping("/{id}/upload-image")
+    public ResponseEntity<?> uploadProfileImage(@PathVariable Long id, @RequestParam("file") org.springframework.web.multipart.MultipartFile file) {
+        try {
+            System.out.println("Upload image request for customer: " + id);
+            System.out.println("Received file: " + (file != null && !file.isEmpty() ? "Yes, size: " + file.getSize() : "No"));
+            
+            if (file == null || file.isEmpty()) {
+                System.out.println("No file provided");
+                return ResponseEntity.badRequest().body("No file provided");
+            }
+            
+            byte[] imageBytes = file.getBytes();
+            System.out.println("Image bytes received: " + imageBytes.length);
+            
+            Customer customer = customerService.getCustomerById(id)
+                    .orElseThrow(() -> new Exception("Customer not found"));
+            
+            System.out.println("Before update - Customer has image: " + (customer.getProfileImage() != null));
+            customer.setProfileImage(imageBytes);
+            System.out.println("After setting - Customer has image: " + (customer.getProfileImage() != null ? "Yes, " + customer.getProfileImage().length + " bytes" : "No"));
+            
+            Customer updated = customerService.updateCustomer(id, customer);
+            System.out.println("After save - Updated customer has image: " + (updated.getProfileImage() != null ? "Yes, " + updated.getProfileImage().length + " bytes" : "No"));
+            
+            return ResponseEntity.ok(mapToDTO(updated));
+        } catch (Exception e) {
+            System.out.println("Upload error: " + e.getMessage());
+            e.printStackTrace();
+            Map<String, Object> error = new HashMap<>();
+            error.put("error", e.getClass().getSimpleName());
+            error.put("message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+        }
     }
 }

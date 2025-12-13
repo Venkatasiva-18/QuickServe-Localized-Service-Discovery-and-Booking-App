@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import "./ProviderDashboard.css";
 import { useNavigate } from "react-router-dom";
-import { FaPlus, FaEdit, FaTrash, FaStar, FaSignOutAlt } from "react-icons/fa";
+import { FaPlus, FaEdit, FaTrash, FaStar, FaSignOutAlt, FaCalendarAlt, FaClock, FaUserTie, FaUserCircle } from "react-icons/fa";
 import axios from "axios";
 
 export default function ProviderDashboard() {
@@ -10,10 +10,19 @@ export default function ProviderDashboard() {
   
   const [provider, setProvider] = useState(null);
   const [services, setServices] = useState([]);
+  const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAddServiceForm, setShowAddServiceForm] = useState(false);
   const [categories, setCategories] = useState([]);
   const [editingService, setEditingService] = useState(null);
+  const [editFormData, setEditFormData] = useState({
+    name: "",
+    description: "",
+    price: "",
+    city: "",
+    state: "",
+    pincode: ""
+  });
   
   const [newService, setNewService] = useState({
     name: "",
@@ -25,22 +34,6 @@ export default function ProviderDashboard() {
     pincode: ""
   });
 
-  useEffect(() => {
-    if (!localStorage.getItem("loggedIn") || localStorage.getItem("role") !== "provider") {
-      navigate("/login-provider");
-      return;
-    }
-
-    if (!providerId) {
-      alert("Provider ID not found");
-      navigate("/login-provider");
-      return;
-    }
-
-    fetchProviderData();
-    fetchCategories();
-  }, []);
-
   const fetchProviderData = async () => {
     try {
       const res = await axios.get(`http://localhost:8080/api/provider/${providerId}`);
@@ -50,6 +43,12 @@ export default function ProviderDashboard() {
         `http://localhost:8080/api/services/provider/${providerId}`
       );
       setServices(servicesRes.data);
+      
+      const bookingsRes = await axios.get(
+        `http://localhost:8080/booking/provider/${providerId}`
+      );
+      setBookings(Array.isArray(bookingsRes.data) ? bookingsRes.data.slice(0, 5) : []);
+      
       setLoading(false);
     } catch (error) {
       console.error("Error fetching provider data:", error);
@@ -66,6 +65,22 @@ export default function ProviderDashboard() {
     }
   };
 
+  useEffect(() => {
+    if (!localStorage.getItem("loggedIn") || localStorage.getItem("role") !== "provider") {
+      navigate("/login-provider");
+      return;
+    }
+
+    if (!providerId) {
+      alert("Provider ID not found");
+      navigate("/login-provider");
+      return;
+    }
+
+    fetchProviderData();
+    fetchCategories();
+  }, [providerId, navigate]);
+
   const handleAddService = async (e) => {
     e.preventDefault();
 
@@ -76,14 +91,6 @@ export default function ProviderDashboard() {
     }
 
     try {
-      // Fetch category to ensure it exists
-      const categoryRes = await axios.get(`http://localhost:8080/api/category/${newService.categoryId}`);
-      const category = categoryRes.data;
-      
-      // Fetch provider to ensure it exists
-      const providerRes = await axios.get(`http://localhost:8080/api/provider/${providerId}`);
-      const provider = providerRes.data;
-
       const serviceData = {
         name: newService.name,
         description: newService.description,
@@ -118,13 +125,99 @@ export default function ProviderDashboard() {
   const handleDeleteService = async (serviceId) => {
     if (window.confirm("Are you sure you want to delete this service?")) {
       try {
-        await axios.delete(`http://localhost:8080/api/services/${serviceId}`);
+        console.log("Deleting service:", serviceId);
+        const response = await axios.delete(`http://localhost:8080/api/services/${serviceId}`);
+        console.log("Delete response:", response.data);
         alert("Service deleted successfully!");
         fetchProviderData();
       } catch (error) {
         console.error("Error deleting service:", error);
-        alert("Failed to delete service");
+        const errorMsg = error.response?.data || error.message;
+        alert("Failed to delete service: " + (typeof errorMsg === 'string' ? errorMsg : JSON.stringify(errorMsg)));
       }
+    }
+  };
+
+  const handleEditClick = (service) => {
+    setEditingService(service.id);
+    setEditFormData({
+      name: service.name,
+      description: service.description,
+      price: service.price,
+      city: service.city,
+      state: service.state,
+      pincode: service.pincode
+    });
+  };
+
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!editFormData.name || !editFormData.description || !editFormData.price) {
+      alert("Please fill all required fields");
+      return;
+    }
+
+    try {
+      const service = services.find(s => s.id === editingService);
+      const updateData = {
+        name: editFormData.name,
+        description: editFormData.description,
+        price: parseFloat(editFormData.price),
+        city: editFormData.city,
+        state: editFormData.state,
+        pincode: parseInt(editFormData.pincode),
+        category: { id: service.category?.id },
+        provider: { id: providerId },
+        isActive: service.isActive
+      };
+      
+      await axios.put(`http://localhost:8080/api/services/${editingService}`, updateData);
+      alert("Service updated successfully!");
+      setEditingService(null);
+      fetchProviderData();
+    } catch (error) {
+      console.error("Error updating service:", error);
+      alert("Failed to update service: " + (error.response?.data || error.message));
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingService(null);
+    setEditFormData({
+      name: "",
+      description: "",
+      price: "",
+      city: "",
+      state: "",
+      pincode: ""
+    });
+  };
+
+  const handleAcceptBooking = async (bookingId) => {
+    try {
+      await axios.put(`http://localhost:8080/booking/${bookingId}`, {
+        status: "Accepted"
+      });
+      alert("Booking Accepted!");
+      fetchProviderData();
+    } catch (error) {
+      console.error("Error accepting booking:", error);
+      alert("Failed to accept booking");
+    }
+  };
+
+  const handleRejectBooking = async (bookingId) => {
+    const confirm = window.confirm("Are you sure you want to reject this booking?");
+    if (!confirm) return;
+
+    try {
+      await axios.put(`http://localhost:8080/booking/cancel/${bookingId}`);
+      alert("Booking Rejected!");
+      fetchProviderData();
+    } catch (error) {
+      console.error("Error rejecting booking:", error);
+      alert("Failed to reject booking");
     }
   };
 
@@ -158,21 +251,99 @@ export default function ProviderDashboard() {
 
       {/* Provider Info Card */}
       <div className="provider-info-card">
-        <div className="info-content">
-          <h2>{provider.name}</h2>
-          <p className="email">{provider.email}</p>
-          <p className="phone">📱 {provider.phone}</p>
-          <p className="location">📍 {provider.city}, {provider.state} - {provider.pincode}</p>
-          <p className="service-type">Service: <strong>{provider.serviceType}</strong></p>
-          <p className="price">Price: <strong>₹{provider.price}</strong></p>
-          <div className="verification-status">
-            {provider.verified ? (
-              <span className="verified">✓ Verified Provider</span>
+        <div className="provider-profile-section">
+          <div className="provider-image-area">
+            {provider.profileImage ? (
+              <img src={`data:image/jpeg;base64,${provider.profileImage}`} alt="Profile" className="provider-profile-img" onError={(e) => {
+                e.target.style.display = 'none';
+              }} />
             ) : (
-              <span className="unverified">✗ Not Verified</span>
+              <FaUserTie size={80} color="#0A4D68" />
             )}
           </div>
+          <div className="info-content">
+            <h2>{provider.name}</h2>
+            <p className="email">{provider.email}</p>
+            <p className="phone">📱 {provider.phone}</p>
+            <p className="location">📍 {provider.city}, {provider.state} - {provider.pincode}</p>
+            <p className="service-type">Service: <strong>{provider.serviceType}</strong></p>
+            <p className="price">Price: <strong>₹{provider.price}</strong></p>
+            <div className="verification-status">
+              {provider.verified ? (
+                <span className="verified">✓ Verified Provider</span>
+              ) : (
+                <span className="unverified">✗ Not Verified</span>
+              )}
+            </div>
+          </div>
         </div>
+      </div>
+
+      {/* Booking Requests Section */}
+      <div className="booking-requests-section">
+        <div className="section-header">
+          <h2>Recent Booking Requests ({bookings.length})</h2>
+          <button 
+            className="view-all-btn"
+            onClick={() => navigate("/provider-bookings")}
+          >
+            View All Requests →
+          </button>
+        </div>
+
+        {bookings.length > 0 ? (
+          <div className="bookings-preview">
+            {bookings.map((booking) => (
+              <div key={booking.id} className="booking-preview-card">
+                <div className="customer-profile-header">
+                  <div className="customer-avatar">
+                    {booking.customerProfileImage ? (
+                      <img src={`data:image/jpeg;base64,${booking.customerProfileImage}`} alt="Customer" className="customer-profile-img" onError={(e) => {
+                        e.target.style.display = 'none';
+                      }} />
+                    ) : (
+                      <FaUserCircle size={50} color="#0A4D68" />
+                    )}
+                  </div>
+                  <div className="customer-details">
+                    <p className="customer-name"><strong>{booking.customerName || "Customer"}</strong></p>
+                    {booking.customerPhone && <p className="customer-phone">📱 {booking.customerPhone}</p>}
+                  </div>
+                </div>
+                <div className="booking-info">
+                  <p className="service-name"><strong>{booking.serviceName}</strong></p>
+                  <p><FaCalendarAlt /> {booking.date}</p>
+                  <p><FaClock /> {booking.time}</p>
+                </div>
+                <div className="booking-status">
+                  <span className={`status-badge ${booking.status.toLowerCase()}`}>
+                    {booking.status}
+                  </span>
+                </div>
+                {booking.status === "Pending" && (
+                  <div className="booking-actions">
+                    <button 
+                      className="accept-mini-btn"
+                      onClick={() => handleAcceptBooking(booking.id)}
+                    >
+                      Accept
+                    </button>
+                    <button 
+                      className="reject-mini-btn"
+                      onClick={() => handleRejectBooking(booking.id)}
+                    >
+                      Reject
+                    </button>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="no-bookings-message">
+            <p>No booking requests yet. Great services will attract customers!</p>
+          </div>
+        )}
       </div>
 
       {/* Services Section */}
@@ -254,6 +425,84 @@ export default function ProviderDashboard() {
           </div>
         )}
 
+        {/* Edit Service Modal */}
+        {editingService && (
+          <div className="modal-overlay">
+            <div className="edit-service-modal">
+              <div className="modal-header">
+                <h3>Edit Service</h3>
+                <button className="close-btn" onClick={handleCancelEdit}>✕</button>
+              </div>
+
+              <form onSubmit={handleEditSubmit} className="edit-service-form">
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Service Name *</label>
+                    <input
+                      type="text"
+                      value={editFormData.name}
+                      onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
+                      required
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Price (₹) *</label>
+                    <input
+                      type="number"
+                      value={editFormData.price}
+                      onChange={(e) => setEditFormData({ ...editFormData, price: e.target.value })}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label>Description *</label>
+                  <textarea
+                    value={editFormData.description}
+                    onChange={(e) => setEditFormData({ ...editFormData, description: e.target.value })}
+                    rows="4"
+                    required
+                  />
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>City</label>
+                    <input
+                      type="text"
+                      value={editFormData.city}
+                      onChange={(e) => setEditFormData({ ...editFormData, city: e.target.value })}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>State</label>
+                    <input
+                      type="text"
+                      value={editFormData.state}
+                      onChange={(e) => setEditFormData({ ...editFormData, state: e.target.value })}
+                    />
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label>Pincode</label>
+                  <input
+                    type="number"
+                    value={editFormData.pincode}
+                    onChange={(e) => setEditFormData({ ...editFormData, pincode: e.target.value })}
+                  />
+                </div>
+
+                <div className="modal-actions">
+                  <button type="submit" className="save-btn">Save Changes</button>
+                  <button type="button" className="cancel-btn" onClick={handleCancelEdit}>Cancel</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
         {/* Services Grid */}
         {services.length > 0 ? (
           <div className="services-grid">
@@ -277,7 +526,7 @@ export default function ProviderDashboard() {
                 </div>
 
                 <div className="service-actions">
-                  <button className="edit-btn" onClick={() => setEditingService(service.id)}>
+                  <button className="edit-btn" onClick={() => handleEditClick(service)}>
                     <FaEdit /> Edit
                   </button>
                   <button 

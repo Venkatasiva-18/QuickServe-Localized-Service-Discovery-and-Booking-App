@@ -17,6 +17,8 @@ export default function CustomerProfile() {
         return res.json();
       })
       .then(data => {
+        console.log("Customer profile data:", data);
+        console.log("Profile image present:", data.profileImage ? `Yes, length: ${data.profileImage.length}` : "No");
         setProfile(data);
         setLoading(false);
       })
@@ -47,9 +49,16 @@ export default function CustomerProfile() {
   return (
     <div className="profile-container">
       
-      {/* ICON */}
+      {/* PROFILE IMAGE OR ICON */}
       <div className="profile-icon">
-        <FaUserCircle size={120} color="#0A4D68" />
+        {profile.profileImage ? (
+          <img src={`data:image/jpeg;base64,${profile.profileImage}`} alt="Profile" className="profile-image" onError={(e) => {
+            console.error("Image load error:", e);
+            e.target.src = null;
+          }} />
+        ) : (
+          <FaUserCircle size={120} color="#0A4D68" />
+        )}
       </div>
 
       <h1>Customer Profile</h1>

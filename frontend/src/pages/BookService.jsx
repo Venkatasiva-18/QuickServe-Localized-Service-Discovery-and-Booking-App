@@ -119,7 +119,6 @@ export default function BookService() {
     filterServices();
   }, [selectedCategory, city]);
 
-  // Book Service
   const handleBooking = async () => {
     if (!bookingDetails.date || !bookingDetails.time || !selectedService) {
       alert("Please fill all details");
@@ -132,26 +131,30 @@ export default function BookService() {
     }
 
     try {
-      // Parse date and time into proper formats
-      const [hours, minutes] = bookingDetails.time.split(':');
-      
       const booking = {
-        customer: { id: parseInt(customerId) },
-        provider: { id: selectedService.provider.id },
-        service: { id: selectedService.id },
+        customerId: parseInt(customerId),
+        providerId: selectedService.provider.id,
+        serviceId: selectedService.id,
         serviceName: selectedService.name,
         bookingDate: bookingDetails.date,
         bookingTime: bookingDetails.time,
-        status: "Pending"
+        status: "Pending",
+        notes: "",
+        totalAmount: selectedService.price || 0
       };
 
-      const response = await axios.post("http://localhost:8080/booking/create", booking);
+      console.log("Sending booking:", booking);
 
+      const response = await axios.post("http://localhost:8080/booking/create", booking);
+      
+      console.log("Booking response:", response.data);
       alert("Booking Successful!");
       navigate("/customer-bookings");
     } catch (error) {
       console.error("Booking error:", error);
-      alert("Booking failed: " + (error.response?.data?.error || error.message));
+      const errorMsg = error.response?.data || error.message;
+      console.error("Error details:", errorMsg);
+      alert("Booking failed: " + (typeof errorMsg === 'string' ? errorMsg : errorMsg.error || JSON.stringify(errorMsg)));
     }
   };
 

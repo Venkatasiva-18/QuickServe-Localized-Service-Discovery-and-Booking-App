@@ -1,15 +1,27 @@
 package Team.C.Service.Spot.controller;
 
+import Team.C.Service.Spot.dto.BookingDTO;
 import Team.C.Service.Spot.model.Booking;
+import Team.C.Service.Spot.model.Customer;
+import Team.C.Service.Spot.model.Provider;
+import Team.C.Service.Spot.model.Service;
 import Team.C.Service.Spot.services.BookingService;
+import Team.C.Service.Spot.repositery.CustomerRepo;
+import Team.C.Service.Spot.repositery.ProviderRepo;
+import Team.C.Service.Spot.repositery.ServiceRepo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
@@ -19,9 +31,26 @@ import java.util.stream.Collectors;
 public class BookingController {
     
     private final BookingService bookingService;
+    private final CustomerRepo customerRepo;
+    private final ProviderRepo providerRepo;
+    private final ServiceRepo serviceRepo;
     
     private Object convertToDTO(Booking booking) {
         if (booking == null) return null;
+        
+        final String customerProfileImage;
+        if (booking.getCustomer() != null && booking.getCustomer().getProfileImage() != null) {
+            customerProfileImage = java.util.Base64.getEncoder().encodeToString(booking.getCustomer().getProfileImage());
+        } else {
+            customerProfileImage = null;
+        }
+        
+        final String providerProfileImage;
+        if (booking.getProvider() != null && booking.getProvider().getProfileImage() != null) {
+            providerProfileImage = java.util.Base64.getEncoder().encodeToString(booking.getProvider().getProfileImage());
+        } else {
+            providerProfileImage = null;
+        }
         
         return new HashMap<String, Object>() {{
             put("id", booking.getId());
@@ -30,41 +59,97 @@ public class BookingController {
             put("time", booking.getBookingTime());
             put("status", booking.getStatus());
             put("notes", booking.getNotes());
+            put("totalAmount", booking.getTotalAmount());
             put("createdAt", booking.getCreatedAt());
+            put("updatedAt", booking.getUpdatedAt());
             put("completedAt", booking.getCompletedAt());
             put("cancelledAt", booking.getCancelledAt());
             put("customerId", booking.getCustomer() != null ? booking.getCustomer().getId() : null);
             put("customerName", booking.getCustomer() != null ? booking.getCustomer().getName() : null);
+            put("customerPhone", booking.getCustomer() != null ? booking.getCustomer().getPhone() : null);
+            put("customerEmail", booking.getCustomer() != null ? booking.getCustomer().getEmail() : null);
+            put("customerProfileImage", customerProfileImage);
             put("providerId", booking.getProvider() != null ? booking.getProvider().getId() : null);
             put("providerName", booking.getProvider() != null ? booking.getProvider().getName() : null);
+            put("providerPhone", booking.getProvider() != null ? booking.getProvider().getPhone() : null);
+            put("providerEmail", booking.getProvider() != null ? booking.getProvider().getEmail() : null);
+            put("providerProfileImage", providerProfileImage);
             put("serviceId", booking.getService() != null ? booking.getService().getId() : null);
         }};
     }
     
     @PostMapping("/create")
-    public ResponseEntity<?> createBooking(@RequestBody Booking booking) {
+    public ResponseEntity<?> createBooking(@RequestBody BookingDTO bookingDTO) {
         try {
-            if (booking.getCustomer() == null || booking.getCustomer().getId() == null) {
+            if (bookingDTO.getCustomerId() == null || bookingDTO.getCustomerId() <= 0) {
                 return ResponseEntity.badRequest().body("Customer ID is required");
             }
-            if (booking.getProvider() == null || booking.getProvider().getId() == null) {
+            if (bookingDTO.getProviderId() == null || bookingDTO.getProviderId() <= 0) {
                 return ResponseEntity.badRequest().body("Provider ID is required");
             }
-            if (booking.getService() == null || booking.getService().getId() == null) {
+            if (bookingDTO.getServiceId() == null || bookingDTO.getServiceId() <= 0) {
                 return ResponseEntity.badRequest().body("Service ID is required");
             }
-            if (booking.getBookingDate() == null) {
+            if (bookingDTO.getBookingDate() == null || bookingDTO.getBookingDate().isEmpty()) {
                 return ResponseEntity.badRequest().body("Booking date is required");
             }
-            if (booking.getBookingTime() == null) {
+            if (bookingDTO.getBookingTime() == null || bookingDTO.getBookingTime().isEmpty()) {
                 return ResponseEntity.badRequest().body("Booking time is required");
             }
+            
+            Optional<Customer> customer = customerRepo.findById(bookingDTO.getCustomerId());
+            if (!customer.isPresent()) {
+                return ResponseEntity.badRequest().body("Customer not found");
+            }
+            
+            Optional<Provider> provider = providerRepo.findById(bookingDTO.getProviderId());
+            if (!provider.isPresent()) {
+                return ResponseEntity.badRequest().body("Provider not found");
+            }
+            
+            Optional<Service> service = serviceRepo.findById(bookingDTO.getServiceId());
+            if (!service.isPresent()) {
+                return ResponseEntity.badRequest().body("Service not found");
+            }
+            
+            LocalDate bookingDate;
+            LocalTime bookingTime;
+            
+            try {
+                bookingDate = LocalDate.parse(bookingDTO.getBookingDate());
+            } catch (DateTimeParseException e) {
+                return ResponseEntity.badRequest().body("Invalid date format. Use YYYY-MM-DD");
+            }
+            
+            try {
+                bookingTime = LocalTime.parse(bookingDTO.getBookingTime());
+            } catch (DateTimeParseException e) {
+                return ResponseEntity.badRequest().body("Invalid time format. Use HH:MM or HH:MM:SS");
+            }
+            
+            Double totalAmount = bookingDTO.getTotalAmount();
+            if (totalAmount == null || totalAmount <= 0) {
+                totalAmount = service.get().getPrice() != null ? service.get().getPrice() : 0.0;
+            }
+            
+            Booking booking = Booking.builder()
+                    .customer(customer.get())
+                    .provider(provider.get())
+                    .service(service.get())
+                    .serviceName(bookingDTO.getServiceName() != null ? bookingDTO.getServiceName() : service.get().getName())
+                    .bookingDate(bookingDate)
+                    .bookingTime(bookingTime)
+                    .status(bookingDTO.getStatus() != null ? bookingDTO.getStatus() : "Pending")
+                    .notes(bookingDTO.getNotes())
+                    .totalAmount(totalAmount)
+                    .build();
             
             Booking created = bookingService.createBooking(booking);
             return ResponseEntity.status(HttpStatus.CREATED).body(convertToDTO(created));
         } catch (Exception e) {
             Map<String, String> error = new HashMap<>();
             error.put("error", e.getMessage());
+            error.put("type", e.getClass().getSimpleName());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
         }
     }
@@ -122,12 +207,35 @@ public class BookingController {
     }
     
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateBooking(@PathVariable Long id, @RequestBody Booking booking) {
-        Booking updated = bookingService.updateBooking(id, booking);
-        if (updated != null) {
+    public ResponseEntity<?> updateBooking(@PathVariable Long id, @RequestBody Map<String, Object> updates) {
+        try {
+            Optional<Booking> existingBooking = bookingService.getBookingById(id);
+            if (!existingBooking.isPresent()) {
+                return ResponseEntity.notFound().build();
+            }
+            
+            Booking booking = existingBooking.get();
+            
+            if (updates.containsKey("status")) {
+                booking.setStatus((String) updates.get("status"));
+            }
+            if (updates.containsKey("notes")) {
+                booking.setNotes((String) updates.get("notes"));
+            }
+            if (updates.containsKey("bookingDate")) {
+                booking.setBookingDate(LocalDate.parse((String) updates.get("bookingDate")));
+            }
+            if (updates.containsKey("bookingTime")) {
+                booking.setBookingTime(LocalTime.parse((String) updates.get("bookingTime")));
+            }
+            
+            Booking updated = bookingService.updateBookingDirect(booking);
             return ResponseEntity.ok(convertToDTO(updated));
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Failed to update booking: " + e.getMessage());
+            return ResponseEntity.badRequest().body(error);
         }
-        return ResponseEntity.notFound().build();
     }
     
     @PutMapping("/cancel/{id}")

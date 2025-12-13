@@ -31,7 +31,7 @@ public class Customer {
     @Column(unique=true, nullable=false)
     private String email;
 
-    @Column(nullable=false)
+    @Column(name = "password", nullable=false)
     private String password;
 
     @Column(unique=true,nullable=false)
@@ -63,10 +63,13 @@ public class Customer {
     private String role = "CUSTOMER";
 
     @CreationTimestamp
-    @Column(nullable=false, updatable=false)
+    @Column(name = "created_at", nullable=false, updatable=false)
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
-    @Column(nullable=false)
+    @Column(name = "updated_at", nullable=false)
     private LocalDateTime updatedAt;
+
+    @Column(nullable=true, columnDefinition="LONGBLOB")
+    private byte[] profileImage;
 }

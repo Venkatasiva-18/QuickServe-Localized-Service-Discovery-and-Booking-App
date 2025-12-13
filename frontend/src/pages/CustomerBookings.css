@@ -32,7 +32,24 @@
 .booking-header {
   display: flex;
   justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.provider-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
   margin-bottom: 8px;
+}
+
+.provider-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 2px solid #e0e0e0;
 }
 
 .status {
@@ -64,7 +81,7 @@
 
 .cancel-btn {
   margin-top: 12px;
-  padding: 10px;
+  padding: 10px 16px;
   background: #B91C1C;
   color: white;
   border: none;
@@ -73,10 +90,139 @@
   display: flex;
   align-items: center;
   gap: 6px;
+  font-weight: 600;
 }
 
 .cancel-btn:hover {
   background: #7F1D1D;
+}
+
+.rate-btn {
+  margin-top: 12px;
+  padding: 10px 16px;
+  background: #0A4D68;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+}
+
+.rate-btn:hover {
+  background: #063d52;
+}
+
+.rating-form {
+  background: #f8f9fa;
+  padding: 16px;
+  border-radius: 8px;
+  margin-top: 12px;
+  border: 1px solid #e0e0e0;
+}
+
+.rating-section {
+  margin-bottom: 16px;
+}
+
+.rating-section label {
+  display: block;
+  font-weight: 600;
+  color: #0a4d68;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.star-rating {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.star {
+  background: none;
+  border: none;
+  font-size: 32px;
+  color: #ddd;
+  cursor: pointer;
+  transition: color 0.2s ease;
+  padding: 0;
+  line-height: 1;
+}
+
+.star.active {
+  color: #ffc107;
+}
+
+.star:hover {
+  color: #ffc107;
+}
+
+.rating-text {
+  display: block;
+  font-size: 14px;
+  color: #666;
+  font-weight: 500;
+}
+
+.review-textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 14px;
+  resize: vertical;
+  margin-bottom: 12px;
+  box-sizing: border-box;
+}
+
+.review-textarea:focus {
+  outline: none;
+  border-color: #0a4d68;
+  box-shadow: 0 0 0 3px rgba(10, 77, 104, 0.1);
+}
+
+.rating-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.submit-rating-btn,
+.cancel-rating-btn {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  transition: 0.2s ease;
+}
+
+.submit-rating-btn {
+  background: #27ae60;
+  color: white;
+}
+
+.submit-rating-btn:hover:not(:disabled) {
+  background: #229954;
+}
+
+.submit-rating-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.cancel-rating-btn {
+  background: #e0e0e0;
+  color: #333;
+}
+
+.cancel-rating-btn:hover {
+  background: #d0d0d0;
 }
 
 .no-bookings {
