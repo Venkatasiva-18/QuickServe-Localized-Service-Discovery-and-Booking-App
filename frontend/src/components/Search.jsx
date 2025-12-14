@@ -35,8 +35,11 @@ export default function Search() {
         const servicesData = await servicesRes.json();
         const citiesData = await citiesRes.json();
         
-        setServices(servicesData || []);
-        setCities(citiesData || []);
+        const uniqueServices = [...new Set(servicesData || [])];
+        const uniqueCities = [...new Set(citiesData || [])];
+        
+        setServices(uniqueServices);
+        setCities(uniqueCities);
       }
     } catch (err) {
       console.error("Error loading dropdown data:", err);
@@ -55,12 +58,34 @@ export default function Search() {
       const response = await fetch(`http://localhost:8080/api/dropdown/areas?city=${encodeURIComponent(selectedCity)}`);
       if (response.ok) {
         const areasData = await response.json();
-        setAreas(areasData || []);
+        const uniqueAreas = [...new Set(areasData || [])];
+        setAreas(uniqueAreas);
       }
     } catch (err) {
       console.error("Error loading areas:", err);
       setAreas([]);
     }
+  };
+
+  const getFilteredServices = () => {
+    if (!service.trim()) return services;
+    return services.filter(s => 
+      s.toLowerCase().includes(service.toLowerCase())
+    );
+  };
+
+  const getFilteredCities = () => {
+    if (!city.trim()) return cities;
+    return cities.filter(c => 
+      c.toLowerCase().includes(city.toLowerCase())
+    );
+  };
+
+  const getFilteredAreas = () => {
+    if (!area.trim()) return areas;
+    return areas.filter(a => 
+      a.toLowerCase().includes(area.toLowerCase())
+    );
   };
 
   const handleSearch = (e) => {
@@ -92,7 +117,7 @@ export default function Search() {
           <div className="dropdown-container">
             <input
               type="text"
-              placeholder={loadingDropdowns ? "Loading services..." : "Select a service..."}
+              placeholder={loadingDropdowns ? "Loading services..." : "Enter or select a service..."}
               value={service}
               onChange={(e) => setService(e.target.value)}
               onFocus={() => setShowServiceDropdown(true)}
@@ -102,21 +127,25 @@ export default function Search() {
             />
             {showServiceDropdown && services.length > 0 && (
               <div className="dropdown-menu">
-                {services.filter(s => 
-                  s.toLowerCase().includes(service.toLowerCase())
-                ).map(s => (
-                  <div 
-                    key={s} 
-                    className="dropdown-item"
-                    onMouseDown={(e) => {
-                      e.preventDefault();
-                      setService(s);
-                      setShowServiceDropdown(false);
-                    }}
-                  >
-                    {s}
+                {getFilteredServices().length > 0 ? (
+                  getFilteredServices().map(s => (
+                    <div 
+                      key={s} 
+                      className="dropdown-item"
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        setService(s);
+                        setShowServiceDropdown(false);
+                      }}
+                    >
+                      {s}
+                    </div>
+                  ))
+                ) : (
+                  <div className="dropdown-item" style={{color: '#888', fontStyle: 'italic'}}>
+                    No matches - use custom input
                   </div>
-                ))}
+                )}
               </div>
             )}
           </div>
@@ -127,7 +156,7 @@ export default function Search() {
           <div className="dropdown-container">
             <input
               type="text"
-              placeholder={loadingDropdowns ? "Loading cities..." : "Select a city..."}
+              placeholder={loadingDropdowns ? "Loading cities..." : "Enter or select a city..."}
               value={city}
               onChange={(e) => {
                 setCity(e.target.value);
@@ -143,23 +172,27 @@ export default function Search() {
             />
             {showCityDropdown && cities.length > 0 && (
               <div className="dropdown-menu">
-                {cities.filter(c => 
-                  c.toLowerCase().includes(city.toLowerCase())
-                ).map(c => (
-                  <div 
-                    key={c} 
-                    className="dropdown-item"
-                    onMouseDown={(e) => {
-                      e.preventDefault();
-                      setCity(c);
-                      setArea("");
-                      fetchAreasByCity(c);
-                      setShowCityDropdown(false);
-                    }}
-                  >
-                    {c}
+                {getFilteredCities().length > 0 ? (
+                  getFilteredCities().map(c => (
+                    <div 
+                      key={c} 
+                      className="dropdown-item"
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        setCity(c);
+                        setArea("");
+                        fetchAreasByCity(c);
+                        setShowCityDropdown(false);
+                      }}
+                    >
+                      {c}
+                    </div>
+                  ))
+                ) : (
+                  <div className="dropdown-item" style={{color: '#888', fontStyle: 'italic'}}>
+                    No matches - use custom input
                   </div>
-                ))}
+                )}
               </div>
             )}
           </div>
@@ -170,7 +203,7 @@ export default function Search() {
           <div className="dropdown-container">
             <input
               type="text"
-              placeholder={city ? "Select an area..." : "Select city first"}
+              placeholder={city ? "Enter or select an area..." : "Select city first"}
               value={area}
               onChange={(e) => setArea(e.target.value)}
               onFocus={() => setShowAreaDropdown(true)}
@@ -178,23 +211,27 @@ export default function Search() {
               disabled={!city}
               className={`dropdown-input ${!city ? 'disabled' : ''}`}
             />
-            {showAreaDropdown && areas.length > 0 && (
+            {showAreaDropdown && city && areas.length > 0 && (
               <div className="dropdown-menu">
-                {areas.filter(a => 
-                  a.toLowerCase().includes(area.toLowerCase())
-                ).map(a => (
-                  <div 
-                    key={a} 
-                    className="dropdown-item"
-                    onMouseDown={(e) => {
-                      e.preventDefault();
-                      setArea(a);
-                      setShowAreaDropdown(false);
-                    }}
-                  >
-                    {a}
+                {getFilteredAreas().length > 0 ? (
+                  getFilteredAreas().map(a => (
+                    <div 
+                      key={a} 
+                      className="dropdown-item"
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        setArea(a);
+                        setShowAreaDropdown(false);
+                      }}
+                    >
+                      {a}
+                    </div>
+                  ))
+                ) : (
+                  <div className="dropdown-item" style={{color: '#888', fontStyle: 'italic'}}>
+                    No matches - use custom input
                   </div>
-                ))}
+                )}
               </div>
             )}
           </div>

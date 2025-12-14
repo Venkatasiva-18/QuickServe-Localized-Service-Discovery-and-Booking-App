@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import "./CustomerDashboard.css";
+import "./CustomerProfile.css";
 import { FaTools, FaUserEdit, FaHeadset, FaMapMarkerAlt, FaClipboardList } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 

@@ -14,6 +14,8 @@ export default function Navbar() {
   const [search, setSearch] = useState("");
   const [services, setServices] = useState([]);
   const [filtered, setFiltered] = useState([]);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [loadingServices, setLoadingServices] = useState(true);
 
   // Hide Logout on login pages
   const loginPages = [
@@ -23,17 +25,42 @@ export default function Navbar() {
     "/login-admin"
   ];
 
-  // Load static service list
+  // Fetch services from backend
   useEffect(() => {
-    setServices([
-      "Electrician",
-      "Plumber",
-      "Mechanic",
-      "Gardening",
-      "Painter",
-      "Home Cleaning"
-    ]);
+    fetchServices();
   }, []);
+
+  const fetchServices = async () => {
+    try {
+      setLoadingServices(true);
+      const response = await fetch("http://localhost:8080/api/dropdown/services");
+      if (response.ok) {
+        const data = await response.json();
+        setServices(data || []);
+      } else {
+        setServices([
+          "Electrician",
+          "Plumber",
+          "Mechanic",
+          "Gardening",
+          "Painter",
+          "Home Cleaning"
+        ]);
+      }
+    } catch (err) {
+      console.error("Error fetching services:", err);
+      setServices([
+        "Electrician",
+        "Plumber",
+        "Mechanic",
+        "Gardening",
+        "Painter",
+        "Home Cleaning"
+      ]);
+    } finally {
+      setLoadingServices(false);
+    }
+  };
 
   const handleSearchChange = (e) => {
     const val = e.target.value;
@@ -47,6 +74,13 @@ export default function Navbar() {
     setFiltered(
       services.filter(s => s.toLowerCase().includes(val.toLowerCase()))
     );
+  };
+
+  const handleServiceSelect = (service) => {
+    setSearch(service);
+    setFiltered([]);
+    setShowDropdown(false);
+    navigate(`/search?service=${encodeURIComponent(service)}&area=&city=`);
   };
 
   const logout = () => {
@@ -69,19 +103,49 @@ export default function Navbar() {
 
           <input 
             type="text"
-            placeholder="Search services…"
+            placeholder={loadingServices ? "Loading services..." : "Search services…"}
             value={search}
             onChange={handleSearchChange}
+            onFocus={() => setShowDropdown(true)}
+            onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
           />
 
-          {filtered.length > 0 && (
-            <ul className="dropdown">
-              {filtered.map((item, i) => (
-                <li key={i} onClick={() => { setSearch(item); setFiltered([]); }}>
-                  {item}
-                </li>
-              ))}
-            </ul>
+          {showDropdown && (
+            <div className="dropdown-list">
+              {loadingServices ? (
+                <div className="dropdown-loading">Loading services...</div>
+              ) : search.trim() ? (
+                filtered.length > 0 ? (
+                  filtered.map((item, i) => (
+                    <div 
+                      key={i} 
+                      className="dropdown-item"
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        handleServiceSelect(item);
+                      }}
+                    >
+                      {item}
+                    </div>
+                  ))
+                ) : (
+                  <div className="dropdown-no-results">No services found</div>
+                )
+              ) : (
+                services.map((item, i) => (
+                  <div 
+                    key={i} 
+                    className="dropdown-item"
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      handleServiceSelect(item);
+                    }}
+                  >
+                    {item}
+                  </div>
+                ))
+              )}
+            </div>
           )}
         </form>
       </div>

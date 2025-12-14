@@ -177,6 +177,72 @@
   gap: 5px;
 }
 
+.service-provider-info {
+  padding: 12px;
+  background: #f9fafb;
+  border-radius: 6px;
+  margin-bottom: 15px;
+  border-left: 3px solid #0a4d68;
+}
+
+.provider-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  color: #0a4d68;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.provider-icon {
+  font-size: 15px;
+  color: #0a4d68;
+}
+
+.service-provider-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1.5px solid #0a4d68;
+  flex-shrink: 0;
+}
+
+.service-provider-avatar-placeholder {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid #0a4d68;
+  color: #0a4d68;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.provider-details {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.provider-contact {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #555;
+}
+
+.contact-icon {
+  font-size: 12px;
+  color: #0a4d68;
+  flex-shrink: 0;
+}
+
 .service-actions {
   display: flex;
   gap: 10px;

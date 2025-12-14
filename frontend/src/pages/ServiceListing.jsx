@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "./ServiceListing.css";
-import { FaStar, FaMapMarkerAlt, FaIndianRupee } from "react-icons/fa";
+import { FaStar, FaMapMarkerAlt, FaIndianRupee, FaPhone, FaEnvelope, FaUserTie } from "react-icons/fa";
 
 export default function ServiceListing() {
   const [services, setServices] = useState([]);
@@ -170,6 +170,34 @@ export default function ServiceListing() {
 
               <div className="service-price">
                 <FaIndianRupee /> {service.price}
+              </div>
+
+              <div className="service-provider-info">
+                <div className="provider-header">
+                  {service.provider?.profileImage ? (
+                    <img src={service.provider.profileImage} alt={service.provider.name} className="service-provider-avatar" />
+                  ) : (
+                    <div className="service-provider-avatar-placeholder">
+                      <FaUserTie />
+                    </div>
+                  )}
+                  <strong>{service.provider?.name || "Provider"}</strong>
+                </div>
+                
+                <div className="provider-details">
+                  {service.provider?.phone && (
+                    <div className="provider-contact">
+                      <FaPhone className="contact-icon" />
+                      <span>{service.provider.phone}</span>
+                    </div>
+                  )}
+                  {service.provider?.email && (
+                    <div className="provider-contact">
+                      <FaEnvelope className="contact-icon" />
+                      <span>{service.provider.email}</span>
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className="service-actions">

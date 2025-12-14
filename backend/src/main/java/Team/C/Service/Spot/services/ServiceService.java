@@ -14,7 +14,7 @@ public class ServiceService {
     private final ServiceRepo serviceRepo;
     
     public List<Service> getAllServices() {
-        return serviceRepo.findAll();
+        return serviceRepo.findAllActive();
     }
     
     public Optional<Service> getServiceById(Long id) {
@@ -37,8 +37,20 @@ public class ServiceService {
         return serviceRepo.findByLocationOrderByRating(city, state);
     }
     
+    public List<Service> getServicesByCity(String city) {
+        return serviceRepo.findByCityIgnoreCase(city);
+    }
+    
     public List<Service> getServicesByLocationAndCategory(String city, String state, Long categoryId) {
         return serviceRepo.findByLocationAndCategory(city, state, categoryId);
+    }
+    
+    public List<Service> getServicesByCategoryWithProviderStatus(Long categoryId, String city) {
+        return serviceRepo.findByCategoryAndCityWithAllProviders(categoryId, city);
+    }
+    
+    public List<Service> searchServicesByNameWithProviderStatus(String name, String city) {
+        return serviceRepo.searchByNameAndCityWithAllProviders(name, city);
     }
     
     public Service createService(Service service) {

@@ -32,7 +32,7 @@ export default function ProviderUpdate() {
       .then(data => {
         setForm(data);
         if (data.profileImage) {
-          setImagePreview(`data:image/jpeg;base64,${data.profileImage}`);
+          setImagePreview(data.profileImage);
         }
       })
       .catch(err => console.log("Error fetching provider profile:", err));

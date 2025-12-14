@@ -25,7 +25,7 @@ public class CustomerController {
         String profileImageBase64 = null;
         if (customer.getProfileImage() != null) {
             System.out.println("Converting image to base64. Customer ID: " + customer.getId() + ", Image bytes: " + customer.getProfileImage().length);
-            profileImageBase64 = java.util.Base64.getEncoder().encodeToString(customer.getProfileImage());
+            profileImageBase64 = "data:image/jpeg;base64," + java.util.Base64.getEncoder().encodeToString(customer.getProfileImage());
             System.out.println("Converted to base64. Length: " + profileImageBase64.length());
         } else {
             System.out.println("No image found for customer ID: " + customer.getId());

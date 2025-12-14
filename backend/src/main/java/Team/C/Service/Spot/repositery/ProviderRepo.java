@@ -36,4 +36,6 @@ public interface ProviderRepo extends JpaRepository<Provider, Long> {
     
     @Query("SELECT DISTINCT p.addressLine FROM Provider p WHERE p.city = :city AND p.addressLine IS NOT NULL AND p.addressLine != '' ORDER BY p.addressLine ASC")
     List<String> findDistinctAreasByCity(@Param("city") String city);
+    
+    List<Provider> findByRole(String role);
 }

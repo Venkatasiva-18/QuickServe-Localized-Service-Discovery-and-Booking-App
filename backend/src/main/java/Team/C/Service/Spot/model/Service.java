@@ -25,11 +25,11 @@ public class Service {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String description;
     
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
     
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "provider_id", nullable = false)
     private Provider provider;
     

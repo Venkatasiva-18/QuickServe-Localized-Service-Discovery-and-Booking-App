@@ -24,7 +24,7 @@ public class ProviderController {
         String profileImageBase64 = null;
         if (provider.getProfileImage() != null) {
             System.out.println("Converting image to base64. Provider ID: " + provider.getId() + ", Image bytes: " + provider.getProfileImage().length);
-            profileImageBase64 = java.util.Base64.getEncoder().encodeToString(provider.getProfileImage());
+            profileImageBase64 = "data:image/jpeg;base64," + java.util.Base64.getEncoder().encodeToString(provider.getProfileImage());
             System.out.println("Converted to base64. Length: " + profileImageBase64.length());
         } else {
             System.out.println("No image found for provider ID: " + provider.getId());

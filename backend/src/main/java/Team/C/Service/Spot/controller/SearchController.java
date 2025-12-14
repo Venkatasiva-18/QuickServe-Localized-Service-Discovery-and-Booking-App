@@ -6,6 +6,7 @@ import Team.C.Service.Spot.services.ProviderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import java.util.Base64;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -19,6 +20,10 @@ public class SearchController {
     private final ProviderService providerService;
 
     private ProviderDTO mapToDTO(Provider provider) {
+        String profileImageBase64 = null;
+        if (provider.getProfileImage() != null) {
+            profileImageBase64 = "data:image/jpeg;base64," + Base64.getEncoder().encodeToString(provider.getProfileImage());
+        }
         return ProviderDTO.builder()
                 .id(provider.getId())
                 .name(provider.getName())
@@ -35,6 +40,7 @@ public class SearchController {
                 .latitude(provider.getLatitude())
                 .longitude(provider.getLongitude())
                 .verified(provider.getVerified())
+                .profileImage(profileImageBase64)
                 .build();
     }
 

@@ -52,7 +52,7 @@ export default function CustomerProfile() {
       {/* PROFILE IMAGE OR ICON */}
       <div className="profile-icon">
         {profile.profileImage ? (
-          <img src={`data:image/jpeg;base64,${profile.profileImage}`} alt="Profile" className="profile-image" onError={(e) => {
+          <img src={profile.profileImage} alt="Profile" className="profile-image" onError={(e) => {
             console.error("Image load error:", e);
             e.target.src = null;
           }} />
@@ -64,66 +64,88 @@ export default function CustomerProfile() {
       <h1>Customer Profile</h1>
 
       <form className="profile-form">
+        <div className="form-grid">
 
-        {/* PERSONAL DETAILS */}
-        <fieldset className="fieldset-box">
-          <legend>Personal Details</legend>
+          {/* PERSONAL DETAILS */}
+          <fieldset className="fieldset-box">
+            <legend>Personal Details</legend>
 
-          <label>Name</label>
-          <input type="text" value={profile.name} readOnly />
+            <div className="field-group">
+              <label>Name</label>
+              <input type="text" value={profile.name} readOnly />
+            </div>
 
-          <label>Email</label>
-          <input type="text" value={profile.email} readOnly />
+            <div className="field-group">
+              <label>Email</label>
+              <input type="text" value={profile.email} readOnly />
+            </div>
 
-          <label>Phone</label>
-          <input type="text" value={profile.phone} readOnly />
-        </fieldset>
+            <div className="field-group">
+              <label>Phone</label>
+              <input type="text" value={profile.phone} readOnly />
+            </div>
+          </fieldset>
 
-        {/* ADDRESS DETAILS */}
-        <fieldset className="fieldset-box">
-          <legend>Address</legend>
+          {/* ADDRESS DETAILS */}
+          <fieldset className="fieldset-box">
+            <legend>Address</legend>
 
-          <label>Door No</label>
-          <input type="text" value={profile.doorNo} readOnly />
+            <div className="field-group">
+              <label>Door No</label>
+              <input type="text" value={profile.doorNo} readOnly />
+            </div>
 
-          <label>Address Line</label>
-          <input type="text" value={profile.addressLine} readOnly />
+            <div className="field-group">
+              <label>Address Line</label>
+              <input type="text" value={profile.addressLine} readOnly />
+            </div>
 
-          <label>City</label>
-          <input type="text" value={profile.city} readOnly />
+            <div className="field-group">
+              <label>City</label>
+              <input type="text" value={profile.city} readOnly />
+            </div>
 
-          <label>State</label>
-          <input type="text" value={profile.state} readOnly />
+            <div className="field-group">
+              <label>State</label>
+              <input type="text" value={profile.state} readOnly />
+            </div>
 
-          <label>Country</label>
-          <input type="text" value={profile.country} readOnly />
+            <div className="field-group">
+              <label>Country</label>
+              <input type="text" value={profile.country} readOnly />
+            </div>
 
-          <label>Pincode</label>
-          <input type="text" value={profile.pincode} readOnly />
-        </fieldset>
+            <div className="field-group">
+              <label>Pincode</label>
+              <input type="text" value={profile.pincode} readOnly />
+            </div>
+          </fieldset>
 
-        {/* LOCATION */}
-        <fieldset className="fieldset-box">
-          <legend>Location</legend>
+          {/* LOCATION */}
+          <fieldset className="fieldset-box">
+            <legend>Location</legend>
 
-          <label>Latitude</label>
-          <input type="text" value={profile.latitude} readOnly />
+            <div className="field-group">
+              <label>Latitude</label>
+              <input type="text" value={profile.latitude} readOnly />
+            </div>
 
-          <label>Longitude</label>
-          <input type="text" value={profile.longitude} readOnly />
-        </fieldset>
+            <div className="field-group">
+              <label>Longitude</label>
+              <input type="text" value={profile.longitude} readOnly />
+            </div>
 
-        {/* STATUS */}
-        <fieldset className="fieldset-box">
-          <legend>Verification Status</legend>
+            <div className="field-group verification-box">
+              <label>Status</label>
+              {profile.verified ? (
+                <p className="verified-status">✔ Verified</p>
+              ) : (
+                <p className="unverified-status">✖ Not Verified</p>
+              )}
+            </div>
+          </fieldset>
 
-          {profile.verified ? (
-            <p className="verified-status">✔ Verified Customer</p>
-          ) : (
-            <p className="unverified-status">✖ Not Verified</p>
-          )}
-        </fieldset>
-
+        </div>
       </form>
 
       <Link to="/customer-update" className="edit-profile-btn">

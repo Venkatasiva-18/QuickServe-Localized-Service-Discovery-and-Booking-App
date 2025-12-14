@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import java.util.Base64;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -51,9 +52,13 @@ public class ServiceController {
                     put("city", service.getProvider().getCity());
                     put("state", service.getProvider().getState());
                     put("pincode", service.getProvider().getPincode());
+                    put("addressLine", service.getProvider().getAddressLine());
                     put("serviceType", service.getProvider().getServiceType());
                     put("price", service.getProvider().getPrice());
                     put("verified", service.getProvider().getVerified());
+                    put("profileImage", service.getProvider().getProfileImage() != null ? 
+                        "data:image/jpeg;base64," + Base64.getEncoder().encodeToString(service.getProvider().getProfileImage())
+                        : null);
                 }} : null);
         }};
     }
@@ -104,6 +109,33 @@ public class ServiceController {
     @GetMapping("/location/{city}/{state}")
     public ResponseEntity<List<?>> getServicesByLocation(@PathVariable String city, @PathVariable String state) {
         List<?> services = serviceService.getServicesByLocation(city, state)
+                .stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(services);
+    }
+    
+    @GetMapping("/location/{city}/all")
+    public ResponseEntity<List<?>> getServicesByCity(@PathVariable String city) {
+        List<?> services = serviceService.getServicesByCity(city)
+                .stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(services);
+    }
+    
+    @GetMapping("/by-category")
+    public ResponseEntity<List<?>> getServicesByCategory(@RequestParam Long categoryId, @RequestParam String city) {
+        List<?> services = serviceService.getServicesByCategoryWithProviderStatus(categoryId, city)
+                .stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(services);
+    }
+    
+    @GetMapping("/search-by-name")
+    public ResponseEntity<List<?>> searchServicesByName(@RequestParam String name, @RequestParam String city) {
+        List<?> services = serviceService.searchServicesByNameWithProviderStatus(name, city)
                 .stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());

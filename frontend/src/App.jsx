@@ -35,6 +35,7 @@ import ProviderBookings from "./pages/ProviderBookings";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminCustomers from "./pages/AdminCustomers";
 import AdminProviders from "./pages/AdminProviders";
+import AdminContacts from "./pages/AdminContacts";
 
 // Other
 import SearchResults from "./pages/SearchResults";
@@ -78,6 +79,7 @@ export default function App() {
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
         <Route path="/admin-customers" element={<AdminCustomers />} />
         <Route path="/admin-providers" element={<AdminProviders />} />
+        <Route path="/admin-contacts" element={<AdminContacts />} />
 
         {/* Contact & Search */}
         <Route path="/search" element={<SearchResults />} />

@@ -40,14 +40,14 @@ public class BookingController {
         
         final String customerProfileImage;
         if (booking.getCustomer() != null && booking.getCustomer().getProfileImage() != null) {
-            customerProfileImage = java.util.Base64.getEncoder().encodeToString(booking.getCustomer().getProfileImage());
+            customerProfileImage = "data:image/jpeg;base64," + java.util.Base64.getEncoder().encodeToString(booking.getCustomer().getProfileImage());
         } else {
             customerProfileImage = null;
         }
         
         final String providerProfileImage;
         if (booking.getProvider() != null && booking.getProvider().getProfileImage() != null) {
-            providerProfileImage = java.util.Base64.getEncoder().encodeToString(booking.getProvider().getProfileImage());
+            providerProfileImage = "data:image/jpeg;base64," + java.util.Base64.getEncoder().encodeToString(booking.getProvider().getProfileImage());
         } else {
             providerProfileImage = null;
         }

@@ -100,7 +100,7 @@ export default function ProviderBookings() {
                 <div className="customer-profile-section">
                   <div className="customer-avatar">
                     {booking.customerProfileImage ? (
-                      <img src={`data:image/jpeg;base64,${booking.customerProfileImage}`} alt="Customer" className="customer-profile-img" onError={(e) => {
+                      <img src={booking.customerProfileImage} alt="Customer" className="customer-profile-img" onError={(e) => {
                         e.target.style.display = 'none';
                       }} />
                     ) : (

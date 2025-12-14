@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import "./ProviderDashboard.css";
+import "./ProviderProfile.css";
 import { useNavigate } from "react-router-dom";
 import { FaPlus, FaEdit, FaTrash, FaStar, FaSignOutAlt, FaCalendarAlt, FaClock, FaUserTie, FaUserCircle } from "react-icons/fa";
 import axios from "axios";
@@ -34,6 +35,12 @@ export default function ProviderDashboard() {
     pincode: ""
   });
 
+  const [showNewCategoryForm, setShowNewCategoryForm] = useState(false);
+  const [newCategory, setNewCategory] = useState({
+    name: "",
+    description: ""
+  });
+
   const fetchProviderData = async () => {
     try {
       const res = await axios.get(`http://localhost:8080/api/provider/${providerId}`);
@@ -62,6 +69,32 @@ export default function ProviderDashboard() {
       setCategories(res.data);
     } catch (error) {
       console.error("Error fetching categories:", error);
+    }
+  };
+
+  const handleCreateCategory = async (e) => {
+    e.preventDefault();
+
+    if (!newCategory.name.trim()) {
+      alert("Please enter a category name");
+      return;
+    }
+
+    try {
+      const categoryData = {
+        name: newCategory.name,
+        description: newCategory.description || ""
+      };
+
+      const res = await axios.post("http://localhost:8080/api/category", categoryData);
+      alert("Category created successfully!");
+      setCategories([...categories, res.data]);
+      setNewCategory({ name: "", description: "" });
+      setShowNewCategoryForm(false);
+      setNewService({ ...newService, categoryId: res.data.id });
+    } catch (error) {
+      console.error("Error creating category:", error);
+      alert("Failed to create category: " + (error.response?.data?.message || error.message));
     }
   };
 
@@ -254,26 +287,32 @@ export default function ProviderDashboard() {
         <div className="provider-profile-section">
           <div className="provider-image-area">
             {provider.profileImage ? (
-              <img src={`data:image/jpeg;base64,${provider.profileImage}`} alt="Profile" className="provider-profile-img" onError={(e) => {
+              <img src={provider.profileImage} alt="Profile" className="provider-profile-img" onError={(e) => {
                 e.target.style.display = 'none';
               }} />
             ) : (
-              <FaUserTie size={80} color="#0A4D68" />
+              <FaUserTie size={40} color="#0A4D68" />
             )}
           </div>
           <div className="info-content">
             <h2>{provider.name}</h2>
-            <p className="email">{provider.email}</p>
-            <p className="phone">📱 {provider.phone}</p>
-            <p className="location">📍 {provider.city}, {provider.state} - {provider.pincode}</p>
-            <p className="service-type">Service: <strong>{provider.serviceType}</strong></p>
-            <p className="price">Price: <strong>₹{provider.price}</strong></p>
-            <div className="verification-status">
-              {provider.verified ? (
-                <span className="verified">✓ Verified Provider</span>
-              ) : (
-                <span className="unverified">✗ Not Verified</span>
-              )}
+            <div className="info-col-1">
+              <p className="email"><strong>Email:</strong> {provider.email}</p>
+              <p className="service"><strong>Service:</strong> {provider.serviceType}</p>
+              <p className="price"><strong>Price:</strong> ₹{provider.price}</p>
+            </div>
+            <div className="info-col-2">
+              <p className="phone"><strong>Phone:</strong> 📱 {provider.phone}</p>
+              <p className="location"><strong>Location:</strong> 📍 {provider.city}, {provider.state} - {provider.pincode}</p>
+            </div>
+            <div className="info-col-3">
+              <div className="verification-status">
+                {provider.verified ? (
+                  <span className="verified">✓ Verified Provider</span>
+                ) : (
+                  <span className="unverified">✗ Not Verified</span>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -298,7 +337,7 @@ export default function ProviderDashboard() {
                 <div className="customer-profile-header">
                   <div className="customer-avatar">
                     {booking.customerProfileImage ? (
-                      <img src={`data:image/jpeg;base64,${booking.customerProfileImage}`} alt="Customer" className="customer-profile-img" onError={(e) => {
+                      <img src={booking.customerProfileImage} alt="Customer" className="customer-profile-img" onError={(e) => {
                         e.target.style.display = 'none';
                       }} />
                     ) : (
@@ -358,6 +397,54 @@ export default function ProviderDashboard() {
           </button>
         </div>
 
+        {/* Add New Category Form */}
+        {showNewCategoryForm && (
+          <div className="modal-overlay">
+            <div className="category-modal">
+              <div className="modal-header">
+                <h3>Create New Category</h3>
+                <button 
+                  className="close-btn" 
+                  onClick={() => setShowNewCategoryForm(false)}
+                >
+                  ✕
+                </button>
+              </div>
+              <form onSubmit={handleCreateCategory}>
+                <div className="form-group">
+                  <label>Category Name *</label>
+                  <input
+                    type="text"
+                    placeholder="e.g., Plumbing, Electrical, etc."
+                    value={newCategory.name}
+                    onChange={(e) => setNewCategory({ ...newCategory, name: e.target.value })}
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Description</label>
+                  <textarea
+                    placeholder="Category description (optional)"
+                    value={newCategory.description}
+                    onChange={(e) => setNewCategory({ ...newCategory, description: e.target.value })}
+                    rows="3"
+                  />
+                </div>
+                <div className="modal-actions">
+                  <button type="submit" className="save-btn">Create Category</button>
+                  <button 
+                    type="button" 
+                    className="cancel-btn"
+                    onClick={() => setShowNewCategoryForm(false)}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
         {/* Add Service Form */}
         {showAddServiceForm && (
           <div className="add-service-form">
@@ -370,17 +457,27 @@ export default function ProviderDashboard() {
                   value={newService.name}
                   onChange={(e) => setNewService({ ...newService, name: e.target.value })}
                 />
-                <select
-                  value={newService.categoryId}
-                  onChange={(e) => setNewService({ ...newService, categoryId: e.target.value })}
-                >
-                  <option value="">Select Category</option>
-                  {categories.map((cat) => (
-                    <option key={cat.id} value={cat.id}>
-                      {cat.name}
-                    </option>
-                  ))}
-                </select>
+                <div className="category-select-wrapper">
+                  <select
+                    value={newService.categoryId}
+                    onChange={(e) => setNewService({ ...newService, categoryId: e.target.value })}
+                  >
+                    <option value="">Select Category</option>
+                    {categories.map((cat) => (
+                      <option key={cat.id} value={cat.id}>
+                        {cat.name}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    type="button"
+                    className="add-category-btn"
+                    onClick={() => setShowNewCategoryForm(true)}
+                    title="Add New Category"
+                  >
+                    <FaPlus /> New
+                  </button>
+                </div>
               </div>
 
               <textarea
