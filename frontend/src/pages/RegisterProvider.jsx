@@ -3,6 +3,19 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "./RegisterProvider.css";
 
+const SERVICE_TYPES = [
+  "Plumbing",
+  "Electrical",
+  "Carpentry",
+  "Cleaning",
+  "Painting",
+  "HVAC",
+  "Gardening",
+  "Appliance Repair",
+  "Locksmith",
+  "General Maintenance"
+];
+
 export default function RegisterProvider() {
   const navigate = useNavigate();
 
@@ -24,6 +37,8 @@ export default function RegisterProvider() {
     longitude: ""
   });
 
+  const [showCustomService, setShowCustomService] = useState(false);
+
   const [imagePreview, setImagePreview] = useState(null);
   const [imageFile, setImageFile] = useState(null);
 
@@ -32,6 +47,17 @@ export default function RegisterProvider() {
       ...formData,
       [e.target.name]: e.target.value
     });
+  };
+
+  const handleServiceTypeChange = (e) => {
+    const value = e.target.value;
+    if (value === "Other") {
+      setShowCustomService(true);
+      setFormData({ ...formData, serviceType: "" });
+    } else {
+      setShowCustomService(false);
+      setFormData({ ...formData, serviceType: value });
+    }
   };
 
   const handleImageChange = (e) => {
@@ -231,8 +257,34 @@ export default function RegisterProvider() {
 
           <div className="form-group">
             <label>Type of Service</label>
-            <input type="text" name="serviceType" placeholder="e.g., Plumbing, Electrical" required onChange={handleChange} />
+            <select 
+              name="serviceType" 
+              onChange={handleServiceTypeChange}
+              value={showCustomService ? "Other" : formData.serviceType}
+              required 
+              className="service-select"
+            >
+              <option value="">-- Select Service Type --</option>
+              {SERVICE_TYPES.map((service) => (
+                <option key={service} value={service}>{service}</option>
+              ))}
+              <option value="Other">Other (Please Specify)</option>
+            </select>
           </div>
+
+          {showCustomService && (
+            <div className="form-group">
+              <label>Enter Your Service Type</label>
+              <input 
+                type="text" 
+                name="serviceType" 
+                placeholder="e.g., Pet Grooming, Tutoring" 
+                value={formData.serviceType}
+                onChange={handleChange}
+                required 
+              />
+            </div>
+          )}
 
           <div className="form-group">
             <label>Approx Price (₹)</label>

@@ -44,6 +44,8 @@
   background: rgba(8, 131, 149, 0.04);
   border-radius: 12px;
   border: 2px solid #088395;
+  position: relative;
+  z-index: 0;
 }
 
 .profile-image-area {
@@ -82,21 +84,35 @@
   letter-spacing: 0.05em;
 }
 
-.image-input {
-  padding: 12px 20px;
-  border: 2px dashed #3B82F6;
-  border-radius: 8px;
-  cursor: pointer;
-  background: #F0F9FF;
-  font-size: 14px;
-  font-weight: 600;
-  color: #0A4D68;
-  transition: all 0.3s ease;
+.file-input-hidden {
+  display: none;
+  pointer-events: none;
 }
 
-.image-input:hover {
+.upload-button {
+  padding: 12px 24px;
+  border: 2px solid #3B82F6;
+  border-radius: 8px;
+  background: #F0F9FF;
+  color: #0A4D68;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-block;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.upload-button:hover {
   border-color: #0A4D68;
   background: #E0F2FE;
+  transform: translateY(-2px);
+}
+
+.upload-button:active {
+  transform: scale(0.98);
 }
 
 .provider-update-container h1 {
@@ -116,6 +132,8 @@
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 24px;
+  position: relative;
+  z-index: 1;
 }
 
 .fieldset-box {
@@ -126,6 +144,8 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
+  position: relative;
+  z-index: 1;
 }
 
 .fieldset-box legend {
@@ -140,7 +160,8 @@
   letter-spacing: 0.05em;
 }
 
-.update-form input {
+.update-form input,
+.update-form select {
   width: 100%;
   padding: 12px 14px;
   border: 2px solid #E5E7EB;
@@ -152,6 +173,9 @@
   box-sizing: border-box;
   background: #FFFFFF;
   color: #1F2937;
+  position: relative;
+  z-index: 2;
+  pointer-events: auto;
 }
 
 .update-form input::placeholder {
@@ -159,15 +183,26 @@
   font-weight: 500;
 }
 
-.update-form input:hover {
+.update-form input:hover,
+.update-form select:hover {
   border-color: #088395;
   box-shadow: 0 4px 12px rgba(8, 131, 149, 0.12);
 }
 
-.update-form input:focus {
+.update-form input:focus,
+.update-form select:focus {
   outline: none;
   border-color: #0A4D68;
   box-shadow: 0 0 0 4px rgba(10, 77, 104, 0.12);
+}
+
+.service-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 20px;
+  padding-right: 40px;
 }
 
 .location-btn {
@@ -259,8 +294,30 @@
     font-size: 22px;
   }
 
-  .update-form input {
-    padding: 12px 14px;
+  .update-form input,
+  .update-form select {
+    padding: 14px 12px;
+    font-size: 13px;
+  }
+
+  .profile-section {
+    padding: 24px 16px;
+    margin-bottom: 32px;
+  }
+
+  .profile-image {
+    width: 140px;
+    height: 140px;
+    border-width: 5px;
+  }
+
+  .upload-button {
+    padding: 14px 20px;
+    font-size: 13px;
+    width: 100%;
+  }
+
+  .upload-label {
     font-size: 13px;
   }
 }

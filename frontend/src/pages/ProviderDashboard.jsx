@@ -298,7 +298,6 @@ export default function ProviderDashboard() {
             <h2>{provider.name}</h2>
             <div className="info-col-1">
               <p className="email"><strong>Email:</strong> {provider.email}</p>
-              <p className="service"><strong>Service:</strong> {provider.serviceType}</p>
               <p className="price"><strong>Price:</strong> ₹{provider.price}</p>
             </div>
             <div className="info-col-2">

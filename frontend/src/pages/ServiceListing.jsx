@@ -14,9 +14,6 @@ export default function ServiceListing() {
 
   useEffect(() => {
     fetchCategories();
-    if (city) {
-      fetchServices();
-    }
   }, []);
 
   const fetchCategories = async () => {
@@ -29,15 +26,14 @@ export default function ServiceListing() {
     }
   };
 
-  const fetchServices = async () => {
-    setLoading(true);
+  const fetchServicesWithParams = async (keyword, category) => {
     try {
       let url = "http://localhost:8080/api/services";
 
-      if (searchKeyword && city) {
-        url = `http://localhost:8080/api/services/search?keyword=${searchKeyword}&city=${city}`;
-      } else if (selectedCategory && city) {
-        url = `http://localhost:8080/api/services/location/${city}/Andhra%20Pradesh/category/${selectedCategory}`;
+      if (keyword && city) {
+        url = `http://localhost:8080/api/services/search?keyword=${keyword}&city=${city}`;
+      } else if (category && city) {
+        url = `http://localhost:8080/api/services/location/${city}/Andhra%20Pradesh/category/${category}`;
       } else if (city) {
         url = `http://localhost:8080/api/services/location/${city}/Andhra%20Pradesh`;
       }
@@ -51,6 +47,11 @@ export default function ServiceListing() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const fetchServices = async () => {
+    setLoading(true);
+    fetchServicesWithParams(searchKeyword, selectedCategory);
   };
 
   const sortServices = (servicesToSort, criteria) => {
@@ -80,7 +81,12 @@ export default function ServiceListing() {
   };
 
   const handleCategoryChange = (e) => {
-    setSelectedCategory(e.target.value);
+    const newCategory = e.target.value;
+    setSelectedCategory(newCategory);
+    if (city) {
+      setLoading(true);
+      fetchServicesWithParams(searchKeyword, newCategory);
+    }
   };
 
   const handleSortChange = (e) => {

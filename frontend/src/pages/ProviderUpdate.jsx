@@ -3,6 +3,19 @@ import axios from "axios";
 import "./ProviderUpdate.css";
 import { FaUserEdit, FaMapMarkerAlt, FaUserTie } from "react-icons/fa";
 
+const SERVICE_TYPES = [
+  "Plumbing",
+  "Electrical",
+  "Carpentry",
+  "Cleaning",
+  "Painting",
+  "HVAC",
+  "Gardening",
+  "Appliance Repair",
+  "Locksmith",
+  "General Maintenance"
+];
+
 export default function ProviderUpdate() {
 
   const providerId = localStorage.getItem("providerId") || 1;
@@ -24,18 +37,42 @@ export default function ProviderUpdate() {
 
   const [imagePreview, setImagePreview] = useState(null);
   const [imageFile, setImageFile] = useState(null);
+  const [error, setError] = useState("");
+  const [showCustomService, setShowCustomService] = useState(false);
 
   // Load provider details
   useEffect(() => {
     fetch(`http://localhost:8080/api/provider/${providerId}`)
       .then(res => res.json())
       .then(data => {
-        setForm(data);
+        console.log("API Response:", data);
+        
+        const formData = {
+          name: data.name || "",
+          email: data.email || "",
+          phone: data.phone || "",
+          serviceType: data.serviceType || "",
+          price: data.price || "",
+          doorNo: data.doorNo || "",
+          addressLine: data.addressLine || "",
+          city: data.city || "",
+          state: data.state || "",
+          pincode: data.pincode || "",
+          latitude: data.latitude || "",
+          longitude: data.longitude || ""
+        };
+        
+        setForm(formData);
+        
+        if (data.serviceType && !SERVICE_TYPES.includes(data.serviceType)) {
+          setShowCustomService(true);
+        }
+        
         if (data.profileImage) {
           setImagePreview(data.profileImage);
         }
       })
-      .catch(err => console.log("Error fetching provider profile:", err));
+      .catch(err => console.error("Error fetching provider profile:", err));
   }, []);
 
   const handleImageChange = (e) => {
@@ -53,6 +90,17 @@ export default function ProviderUpdate() {
   // Update form values
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleServiceTypeChange = (e) => {
+    const value = e.target.value;
+    if (value === "Other") {
+      setShowCustomService(true);
+      setForm({ ...form, serviceType: "" });
+    } else {
+      setShowCustomService(false);
+      setForm({ ...form, serviceType: value });
+    }
   };
 
   // Get current location
@@ -74,7 +122,25 @@ export default function ProviderUpdate() {
     e.preventDefault();
 
     try {
-      await axios.put(`http://localhost:8080/api/provider/${providerId}`, form);
+      const formDataToSend = {
+        name: form.name,
+        email: form.email,
+        phone: form.phone,
+        serviceType: form.serviceType,
+        price: form.price ? parseFloat(form.price) : 0,
+        doorNo: form.doorNo,
+        addressLine: form.addressLine,
+        city: form.city,
+        state: form.state,
+        pincode: form.pincode ? parseInt(form.pincode, 10) : null,
+        latitude: form.latitude ? parseFloat(form.latitude) : null,
+        longitude: form.longitude ? parseFloat(form.longitude) : null
+      };
+
+      console.log("Submitting form data:", formDataToSend);
+
+      const response = await axios.put(`http://localhost:8080/api/provider/${providerId}`, formDataToSend);
+      console.log("Update response:", response);
       
       if (imageFile && typeof imageFile === 'string' && imageFile.startsWith('data:')) {
         try {
@@ -100,8 +166,8 @@ export default function ProviderUpdate() {
       
       alert("Provider Profile Updated Successfully!");
     } catch (err) {
-      alert("Update Failed!");
-      console.error(err);
+      alert("Update Failed! " + (err.response?.data?.message || err.message));
+      console.error("Submit error:", err);
     }
   };
 
@@ -120,10 +186,14 @@ export default function ProviderUpdate() {
           <label className="upload-label">Update Profile Picture</label>
           <input 
             type="file" 
+            id="file-input"
             accept="image/*" 
             onChange={handleImageChange}
-            className="image-input"
+            className="file-input-hidden"
           />
+          <label htmlFor="file-input" className="upload-button">
+            Choose Image
+          </label>
         </div>
       </div>
 
@@ -147,7 +217,7 @@ export default function ProviderUpdate() {
 
           <div className="form-group">
             <label>Phone</label>
-            <input type="text" name="phone" placeholder="e.g., 9876543210" value={form.phone} onChange={handleChange} required />
+            <input type="tel" name="phone" placeholder="e.g., 9876543210" value={form.phone} onChange={handleChange} inputMode="numeric" required />
           </div>
         </fieldset>
 
@@ -157,12 +227,38 @@ export default function ProviderUpdate() {
 
           <div className="form-group">
             <label>Service Type</label>
-            <input type="text" name="serviceType" placeholder="e.g., Plumbing, Electrical" value={form.serviceType} onChange={handleChange} required />
+            <select 
+              name="serviceType" 
+              onChange={handleServiceTypeChange}
+              value={showCustomService ? "Other" : form.serviceType}
+              required 
+              className="service-select"
+            >
+              <option value="">-- Select Service Type --</option>
+              {SERVICE_TYPES.map((service) => (
+                <option key={service} value={service}>{service}</option>
+              ))}
+              <option value="Other">Other (Please Specify)</option>
+            </select>
           </div>
+
+          {showCustomService && (
+            <div className="form-group">
+              <label>Enter Your Service Type</label>
+              <input 
+                type="text" 
+                name="serviceType" 
+                placeholder="e.g., Pet Grooming, Tutoring" 
+                value={form.serviceType}
+                onChange={handleChange}
+                required 
+              />
+            </div>
+          )}
 
           <div className="form-group">
             <label>Approx Price (₹)</label>
-            <input type="number" name="price" placeholder="e.g., 500" value={form.price} onChange={handleChange} required />
+            <input type="number" name="price" step="0.01" min="0" placeholder="e.g., 500" value={form.price} onChange={handleChange} required />
           </div>
         </fieldset>
 
@@ -192,7 +288,7 @@ export default function ProviderUpdate() {
 
           <div className="form-group">
             <label>Pincode</label>
-            <input type="text" name="pincode" placeholder="e.g., 400001" value={form.pincode} onChange={handleChange} />
+            <input type="number" name="pincode" min="0" placeholder="e.g., 400001" value={form.pincode} onChange={handleChange} />
           </div>
         </fieldset>
 
@@ -202,12 +298,12 @@ export default function ProviderUpdate() {
 
           <div className="form-group">
             <label>Latitude</label>
-            <input type="text" name="latitude" placeholder="Detected automatically" value={form.latitude} onChange={handleChange} />
+            <input type="number" name="latitude" step="0.0001" placeholder="Detected automatically" value={form.latitude} onChange={handleChange} />
           </div>
 
           <div className="form-group">
             <label>Longitude</label>
-            <input type="text" name="longitude" placeholder="Detected automatically" value={form.longitude} onChange={handleChange} />
+            <input type="number" name="longitude" step="0.0001" placeholder="Detected automatically" value={form.longitude} onChange={handleChange} />
           </div>
 
           <button type="button" className="location-btn" onClick={getLocation}>
