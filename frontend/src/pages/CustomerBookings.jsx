@@ -121,7 +121,6 @@ export default function CustomerBookings() {
               <div className="provider-info">
                 {b.providerProfileImage && (
                   <img src={b.providerProfileImage} alt="Provider" className="provider-avatar" onError={(e) => {
-                    console.error("Provider image load error:", e);
                     e.target.style.display = 'none';
                   }} />
                 )}

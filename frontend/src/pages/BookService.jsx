@@ -22,14 +22,48 @@ export default function BookService() {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedCategoryName, setSelectedCategoryName] = useState("All Categories");
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
-  const [serviceName, setServiceName] = useState("");
+  const [categorySearch, setCategorySearch] = useState("");
+  
+  const [cities, setCities] = useState([]);
   const [city, setCity] = useState("");
+  const [showCityDropdown, setShowCityDropdown] = useState(false);
+  const [citySearch, setCitySearch] = useState("");
+  
+  const [serviceNames, setServiceNames] = useState([]);
+  const [serviceName, setServiceName] = useState("");
+  const [showServiceDropdown, setShowServiceDropdown] = useState(false);
+  const [serviceSearch, setServiceSearch] = useState("");
+
+  // Clear provider filter when user manually changes filters
+  const handleCategoryChange = (catId, catName) => {
+    setSelectedCategory(catId);
+    setSelectedCategoryName(catName);
+    setCategorySearch("");
+    setShowCategoryDropdown(false);
+    setFilterByProviderId(null); // Clear provider filter on manual change
+  };
+
+  const handleCityChange = (cityName) => {
+    setCity(cityName);
+    setCitySearch("");
+    setShowCityDropdown(false);
+    setFilterByProviderId(null); // Clear provider filter on manual change
+  };
+
+  const handleServiceChange = (serviceName) => {
+    setServiceName(serviceName);
+    setServiceSearch("");
+    setShowServiceDropdown(false);
+    setFilterByProviderId(null); // Clear provider filter on manual change
+  };
+  
   const [allServices, setAllServices] = useState([]);
   const [services, setServices] = useState([]);
-  const [filteredServices, setFilteredServices] = useState([]);
   const [inactiveServices, setInactiveServices] = useState([]);
   const [selectedService, setSelectedService] = useState(null);
-  const [showInactive, setShowInactive] = useState(false);
+  const [filterByProviderId, setFilterByProviderId] = useState(null);
+
+
 
   const [bookingDetails, setBookingDetails] = useState({
     date: "",
@@ -38,7 +72,6 @@ export default function BookService() {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [searchError, setSearchError] = useState("");
   
   // Search context from navigation state
   const [searchContext, setSearchContext] = useState({
@@ -69,21 +102,23 @@ export default function BookService() {
     // Pre-select service if coming from search results (service or provider)
     if (location.state?.preSelectedService) {
       const preSelected = location.state.preSelectedService;
-      console.log("Pre-selected from search:", preSelected);
-      
       if (preSelected.provider) {
         setSelectedService(preSelected);
       } else if (preSelected.serviceId) {
         preSelected.id = preSelected.serviceId;
         setSelectedService(preSelected);
       } else if (preSelected.name && !preSelected.category) {
-        localStorage.setItem("selectedProviderId", preSelected.id);
+        setFilterByProviderId(preSelected.id);
         if (preSelected.city) {
           setCity(preSelected.city);
         }
       }
+    } else {
+      // Clear provider filter if not coming from search results
+      setFilterByProviderId(null);
+      localStorage.removeItem("selectedProviderId");
     }
-  }, []);
+  }, [navigate, location.state?.searchContext, location.state?.preSelectedService]);
 
   // Fetch all categories and services on load
   useEffect(() => {
@@ -91,16 +126,11 @@ export default function BookService() {
       setLoading(true);
       setError(null);
       try {
-        console.log("Starting to load services...");
         await initializeDemoDataIfNeeded();
-        console.log("Demo data initialized");
         await fetchCategories();
-        console.log("Categories fetched");
         await fetchAllServices();
-        console.log("Services fetched");
       } catch (err) {
         setError("Failed to load services. Please try again.");
-        console.error("Data loading error:", err);
       } finally {
         setLoading(false);
       }
@@ -113,14 +143,11 @@ export default function BookService() {
     try {
       const res = await axios.get("http://localhost:8080/api/services");
       if (!res.data || res.data.length === 0) {
-        console.log("No services found. Initializing demo data...");
-        const initRes = await axios.post("http://localhost:8080/api/init/demo-data");
-        console.log("Demo data initialized!", initRes.data);
-        // Small delay to ensure data is persisted
+        await axios.post("http://localhost:8080/api/init/demo-data");
         await new Promise(resolve => setTimeout(resolve, 1000));
       }
     } catch (error) {
-      console.error("Service check/initialization error:", error);
+      // Silently fail
     }
   };
 
@@ -130,7 +157,7 @@ export default function BookService() {
       const res = await axios.get("http://localhost:8080/api/category");
       setCategories(res.data);
     } catch (error) {
-      console.error("Error fetching categories:", error);
+      // Silently fail
     }
   };
 
@@ -138,115 +165,167 @@ export default function BookService() {
   const fetchAllServices = async () => {
     try {
       const res = await axios.get("http://localhost:8080/api/services");
-      console.log("All services API response:", res.data);
-      console.log("Services count:", res.data?.length || 0);
       
       if (res.data && Array.isArray(res.data)) {
-        res.data.forEach((s, idx) => {
-          console.log(`Service ${idx}:`, {
-            id: s.id,
-            name: s.name,
-            provider: s.provider ? {id: s.provider.id, name: s.provider.name} : null
-          });
+        const citiesSet = new Set();
+        const serviceNamesSet = new Set();
+        res.data.forEach((s) => {
+          if (s.city) citiesSet.add(s.city);
+          if (s.name) serviceNamesSet.add(s.name);
         });
+        const citiesArray = Array.from(citiesSet).sort();
+        const serviceNamesArray = Array.from(serviceNamesSet).sort();
+        setCities(citiesArray);
+        setServiceNames(serviceNamesArray);
       }
       
       const fullServices = res.data || [];
       setAllServices(fullServices);
       setServices(fullServices);
-      setFilteredServices(fullServices);
     } catch (error) {
-      console.error("Error fetching services:", error);
       setAllServices([]);
       setServices([]);
-      setFilteredServices([]);
     }
   };
 
-  // Filter services by category and city
-  const filterServices = useCallback(() => {
-    console.log("=== FILTERING START ===");
-    console.log("allServices count:", allServices.length);
-    console.log("Current filters:", { selectedCategory, city, serviceName });
+  // Helper function: Get available categories based on city and service name selections
+  const getAvailableCategories = useCallback(() => {
+    if (allServices.length === 0) return categories;
     
+    let filtered = [...allServices];
+    
+    // Filter by selected city
+    if (city && city.trim() !== "") {
+      filtered = filtered.filter(s => 
+        s.city && s.city.toLowerCase() === city.toLowerCase()
+      );
+    }
+    
+    // Filter by selected service name
+    if (serviceName && serviceName.trim() !== "") {
+      filtered = filtered.filter(s =>
+        s.name && s.name.toLowerCase() === serviceName.toLowerCase()
+      );
+    }
+    
+    // Extract available category IDs
+    const availableCategoryIds = new Set(
+      filtered.map(s => s.category?.id).filter(Boolean)
+    );
+    
+    // Return only categories that exist in filtered services
+    return categories.filter(cat => availableCategoryIds.has(cat.id));
+  }, [allServices, categories, city, serviceName]);
+
+  // Helper function: Get available services based on category and city selections
+  const getAvailableServiceNames = useCallback(() => {
+    if (allServices.length === 0) return serviceNames;
+    
+    let filtered = [...allServices];
+    
+    // Filter by selected category
+    if (selectedCategory && selectedCategory !== "") {
+      filtered = filtered.filter(s =>
+        s.category?.id === parseInt(selectedCategory)
+      );
+    }
+    
+    // Filter by selected city
+    if (city && city.trim() !== "") {
+      filtered = filtered.filter(s =>
+        s.city && s.city.toLowerCase() === city.toLowerCase()
+      );
+    }
+    
+    // Extract available service names
+    const availableNames = new Set(
+      filtered.map(s => s.name).filter(Boolean)
+    );
+    
+    // Return sorted service names
+    return Array.from(availableNames).sort();
+  }, [allServices, serviceNames, selectedCategory, city]);
+
+  // Helper function: Get available cities based on category and service name selections
+  const getAvailableCities = useCallback(() => {
+    if (allServices.length === 0) return cities;
+    
+    let filtered = [...allServices];
+    
+    // Filter by selected category
+    if (selectedCategory && selectedCategory !== "") {
+      filtered = filtered.filter(s =>
+        s.category?.id === parseInt(selectedCategory)
+      );
+    }
+    
+    // Filter by selected service name
+    if (serviceName && serviceName.trim() !== "") {
+      filtered = filtered.filter(s =>
+        s.name && s.name.toLowerCase() === serviceName.toLowerCase()
+      );
+    }
+    
+    // Extract available cities
+    const availableCitiesSet = new Set(
+      filtered.map(s => s.city).filter(Boolean)
+    );
+    
+    // Return sorted cities
+    return Array.from(availableCitiesSet).sort();
+  }, [allServices, cities, selectedCategory, serviceName]);
+
+  // Filter services by category and city
+  const applyFilters = useCallback(() => {
     if (allServices.length === 0) {
-      console.log("No services to filter!");
-      setFilteredServices([]);
       setServices([]);
       return;
     }
 
     let filtered = [...allServices];
-    console.log("Starting with:", filtered.length, "services");
 
-    // Step 1: Filter by city (required for meaningful results)
+    // Step 1: Filter by city
     if (city && city.trim() !== "") {
-      const before = filtered.length;
       filtered = filtered.filter((s) => {
         const match = s.city && s.city.toLowerCase().includes(city.toLowerCase());
         return match;
       });
-      console.log(`City filter ("${city}"): ${before} -> ${filtered.length}`);
-    } else {
-      console.log("No city filter (empty)");
     }
 
-    // Step 2: Filter by category (only if specifically selected - not "All Categories")
+    // Step 2: Filter by category (only if specifically selected)
     if (selectedCategory && selectedCategory !== "") {
-      const before = filtered.length;
       filtered = filtered.filter((s) => {
         const categoryId = s.category?.id;
         const selectedCatId = parseInt(selectedCategory);
         const matches = categoryId === selectedCatId;
         return matches;
       });
-      console.log(`Category filter (${selectedCategory}): ${before} -> ${filtered.length}`);
-      
-      // If category filter removed everything, show what categories exist
-      if (filtered.length === 0 && before > 0) {
-        console.log("Category filter returned 0 results. Available categories in results:");
-        allServices
-          .filter(s => s.city && s.city.toLowerCase().includes(city.toLowerCase()))
-          .forEach(s => {
-            console.log(`  - ${s.name}: category_id=${s.category?.id}, category_name=${s.category?.name}`);
-          });
-      }
-    } else {
-      console.log("No category filter (All Categories selected)");
     }
 
     // Step 3: Filter by service name (if provided)
     if (serviceName && serviceName.trim() !== "") {
-      const before = filtered.length;
       filtered = filtered.filter((s) =>
         s.name && s.name.toLowerCase().includes(serviceName.toLowerCase())
       );
-      console.log(`Service name filter ("${serviceName}"): ${before} -> ${filtered.length}`);
     }
 
-    // Step 4: Filter by provider (if stored)
-    const selectedProviderId = localStorage.getItem("selectedProviderId");
-    if (selectedProviderId) {
-      const before = filtered.length;
+    // Step 4: Filter by provider (only if explicitly set from search results)
+    if (filterByProviderId) {
       filtered = filtered.filter((s) =>
-        s.provider?.id === parseInt(selectedProviderId)
+        s.provider?.id === parseInt(filterByProviderId)
       );
-      console.log(`Provider filter: ${before} -> ${filtered.length}`);
-    }
-
-    console.log("=== FINAL RESULT:", filtered.length, "services ===");
-    
-    if (filtered.length > 0) {
-      console.log("Filtered services:");
-      filtered.slice(0, 5).forEach(s => {
-        console.log(`  ✓ ${s.name} | city: ${s.city} | category: ${s.category?.name}`);
-      });
     }
     
-    setFilteredServices(filtered);
     setServices(filtered);
     setInactiveServices([]);
-  }, [allServices, selectedCategory, city, serviceName]);
+  }, [allServices, selectedCategory, city, serviceName, filterByProviderId]);
+
+  // Apply filters when allServices loads or when filter inputs change
+  useEffect(() => {
+    if (allServices.length > 0) {
+      applyFilters();
+    }
+  }, [selectedCategory, city, serviceName, allServices, filterByProviderId, applyFilters]);
 
   const handleBooking = async () => {
     if (!bookingDetails.date || !bookingDetails.time || !selectedService) {
@@ -259,17 +338,41 @@ export default function BookService() {
       return;
     }
 
+    const customerIdNum = parseInt(customerId);
+    if (isNaN(customerIdNum) || customerIdNum <= 0) {
+      alert("Invalid customer ID. Please login again.");
+      return;
+    }
+
     const providerId = selectedService.provider?.id || selectedService.providerId;
     if (!providerId) {
       alert("Service provider information is missing. Please select another service.");
       return;
     }
 
+    const providerIdNum = parseInt(providerId);
+    if (isNaN(providerIdNum) || providerIdNum <= 0) {
+      alert("Invalid provider ID. Please select another service.");
+      return;
+    }
+
+    const serviceId = selectedService.id || selectedService.serviceId;
+    if (!serviceId) {
+      alert("Service ID not found. Please select another service.");
+      return;
+    }
+
+    const serviceIdNum = parseInt(serviceId);
+    if (isNaN(serviceIdNum) || serviceIdNum <= 0) {
+      alert("Invalid service ID. Please select another service.");
+      return;
+    }
+
     try {
       const booking = {
-        customerId: parseInt(customerId),
-        providerId: providerId,
-        serviceId: selectedService.id || selectedService.serviceId,
+        customerId: customerIdNum,
+        providerId: providerIdNum,
+        serviceId: serviceIdNum,
         serviceName: selectedService.name,
         bookingDate: bookingDetails.date,
         bookingTime: bookingDetails.time,
@@ -278,18 +381,12 @@ export default function BookService() {
         totalAmount: selectedService.price || 0
       };
 
-      console.log("Sending booking:", booking);
-
       const response = await axios.post("http://localhost:8080/booking/create", booking);
-      
-      console.log("Booking response:", response.data);
       alert("Booking Successful!");
       localStorage.removeItem("selectedProviderId");
       navigate("/customer-bookings");
     } catch (error) {
-      console.error("Booking error:", error);
       const errorMsg = error.response?.data || error.message;
-      console.error("Error details:", errorMsg);
       alert("Booking failed: " + (typeof errorMsg === 'string' ? errorMsg : errorMsg.error || JSON.stringify(errorMsg)));
     }
   };
@@ -302,7 +399,6 @@ export default function BookService() {
       await fetchAllServices();
     } catch (err) {
       setError("Failed to refresh services");
-      console.error("Refresh error:", err);
     } finally {
       setLoading(false);
     }
@@ -351,91 +447,170 @@ export default function BookService() {
       {/* Main Content */}
       {!loading && !error && (
         <>
-      {/* Search Inputs with Category Dropdown */}
+      {/* Search Inputs with Searchable Dropdowns */}
       <div className="book-search-container">
         <div className="book-search">
-          {/* Category Dropdown */}
+          {/* Category Dropdown with Search */}
           <div className="dropdown-field" style={{position: 'relative', minWidth: '200px'}}>
-            <button
-              type="button"
-              onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
+            <input
+              type="text"
+              placeholder="Search Category..."
+              value={showCategoryDropdown ? categorySearch : selectedCategoryName}
+              onChange={(e) => {
+                setCategorySearch(e.target.value);
+                setShowCategoryDropdown(true);
+              }}
+              onFocus={() => {
+                setShowCategoryDropdown(true);
+                setCategorySearch("");
+              }}
               onBlur={() => setTimeout(() => setShowCategoryDropdown(false), 150)}
               className="category-dropdown"
-              title="Filter by service category"
-            >
-              {selectedCategoryName}
-            </button>
+              style={{width: '100%', padding: '8px'}}
+              title="Search and select category"
+            />
             {showCategoryDropdown && (
               <div className="dropdown-menu">
                 <div 
                   className="dropdown-item"
                   onMouseDown={() => {
-                    setSelectedCategory("");
-                    setSelectedCategoryName("All Categories");
-                    setShowCategoryDropdown(false);
+                    handleCategoryChange("", "All Categories");
                   }}
                   style={{fontWeight: selectedCategory === "" ? "600" : "500"}}
                 >
                   All Categories
                 </div>
-                {categories.map((cat) => (
-                  <div
-                    key={cat.id}
-                    className="dropdown-item"
-                    onMouseDown={() => {
-                      setSelectedCategory(cat.id.toString());
-                      setSelectedCategoryName(cat.name);
-                      setShowCategoryDropdown(false);
-                    }}
-                    style={{fontWeight: selectedCategory === cat.id.toString() ? "600" : "500"}}
-                  >
-                    {cat.name}
-                  </div>
-                ))}
+                {getAvailableCategories()
+                  .filter((cat) =>
+                    cat.name.toLowerCase().includes(categorySearch.toLowerCase())
+                  )
+                  .map((cat) => (
+                    <div
+                      key={cat.id}
+                      className="dropdown-item"
+                      onMouseDown={() => {
+                        handleCategoryChange(cat.id.toString(), cat.name);
+                      }}
+                      style={{fontWeight: selectedCategory === cat.id.toString() ? "600" : "500"}}
+                    >
+                      {cat.name}
+                    </div>
+                  ))}
               </div>
             )}
           </div>
 
-          <input
-            type="text"
-            placeholder="Service Name (e.g., Plumbing, Electrical...)"
-            value={serviceName}
-            onChange={(e) => setServiceName(e.target.value)}
-            title="Search by service name"
-            className="service-name-input"
-          />
+          {/* Service Name Dropdown with Search */}
+          <div className="dropdown-field" style={{position: 'relative', minWidth: '200px'}}>
+            <input
+              type="text"
+              placeholder="Search Service..."
+              value={showServiceDropdown ? serviceSearch : serviceName}
+              onChange={(e) => {
+                setServiceSearch(e.target.value);
+                setShowServiceDropdown(true);
+              }}
+              onFocus={() => {
+                setShowServiceDropdown(true);
+                setServiceSearch("");
+              }}
+              onBlur={() => setTimeout(() => setShowServiceDropdown(false), 150)}
+              className="category-dropdown"
+              style={{width: '100%', padding: '8px'}}
+              title="Search and select service"
+            />
+            {showServiceDropdown && (
+              <div className="dropdown-menu">
+                <div 
+                  className="dropdown-item"
+                  onMouseDown={() => {
+                    handleServiceChange("");
+                  }}
+                  style={{fontWeight: serviceName === "" ? "600" : "500"}}
+                >
+                  All Services
+                </div>
+                {getAvailableServiceNames()
+                  .filter((svc) =>
+                    svc.toLowerCase().includes(serviceSearch.toLowerCase())
+                  )
+                  .map((svc) => (
+                    <div
+                      key={svc}
+                      className="dropdown-item"
+                      onMouseDown={() => {
+                        handleServiceChange(svc);
+                      }}
+                      style={{fontWeight: serviceName === svc ? "600" : "500"}}
+                    >
+                      {svc}
+                    </div>
+                  ))}
+              </div>
+            )}
+          </div>
 
-          <input
-            type="text"
-            placeholder="City (Hyderabad, Mumbai...)"
-            value={city}
-            onChange={(e) => setCity(e.target.value)}
-            title="Filter by city"
-            className="city-input"
-          />
+          {/* City Dropdown with Search */}
+          <div className="dropdown-field" style={{position: 'relative', minWidth: '200px'}}>
+            <input
+              type="text"
+              placeholder="Search City..."
+              value={showCityDropdown ? citySearch : city}
+              onChange={(e) => {
+                setCitySearch(e.target.value);
+                setShowCityDropdown(true);
+              }}
+              onFocus={() => {
+                setShowCityDropdown(true);
+                setCitySearch("");
+              }}
+              onBlur={() => setTimeout(() => setShowCityDropdown(false), 150)}
+              className="category-dropdown"
+              style={{width: '100%', padding: '8px'}}
+              title="Search and select city"
+            />
+            {showCityDropdown && (
+              <div className="dropdown-menu">
+                <div 
+                  className="dropdown-item"
+                  onMouseDown={() => {
+                    handleCityChange("");
+                  }}
+                  style={{fontWeight: city === "" ? "600" : "500"}}
+                >
+                  All Cities
+                </div>
+                {getAvailableCities()
+                  .filter((c) =>
+                    c.toLowerCase().includes(citySearch.toLowerCase())
+                  )
+                  .map((c) => (
+                    <div
+                      key={c}
+                      className="dropdown-item"
+                      onMouseDown={() => {
+                        handleCityChange(c);
+                      }}
+                      style={{fontWeight: city === c ? "600" : "500"}}
+                    >
+                      {c}
+                    </div>
+                  ))}
+              </div>
+            )}
+          </div>
 
           <button 
             type="button" 
             className="filter-search-btn"
             onClick={() => {
-              console.log("Filter button clicked. Current state:", {
-                selectedCategory,
-                selectedCategoryName,
-                city,
-                serviceName,
-                allServicesCount: allServices.length
-              });
-              filterServices();
+              applyFilters();
             }}
             title="Click to search with filters"
           >
             Filter Services
           </button>
         </div>
-
-        {searchError && (
-          <div className="search-error-message">{searchError}</div>
-        )}
       </div>
 
       {/* Active Services List */}
