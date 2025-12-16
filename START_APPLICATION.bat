@@ -1,14 +1,20 @@
 @echo off
+setlocal
+
+:: Get the current directory
+set "PROJECT_DIR=%~dp0"
+
 echo.
 echo ========================================
 echo   Service Spot Application Starter
 echo ========================================
 echo.
+echo Project Directory: %PROJECT_DIR%
+echo.
 
 echo [1] Starting Backend (Port 8080)...
 echo.
-cd backend
-start cmd /k "title Backend - Service Spot & mvn spring-boot:run"
+start "Backend - Service Spot" cmd /k "cd /d "%PROJECT_DIR%backend" && mvnw spring-boot:run"
 
 echo [2] Waiting for Backend to start (30 seconds)...
 timeout /t 30 /nobreak
@@ -16,12 +22,11 @@ timeout /t 30 /nobreak
 echo.
 echo [3] Starting Frontend (Port 5173)...
 echo.
-cd ..\frontend
-start cmd /k "title Frontend - Service Spot & npm run dev"
+start "Frontend - Service Spot" cmd /k "cd /d "%PROJECT_DIR%frontend" && npm run dev"
 
 echo.
 echo ========================================
-echo   Application Starting!
+echo   Application Started Successfully!
 echo ========================================
 echo.
 echo Backend:  http://localhost:8080
@@ -37,4 +42,9 @@ echo   Admin:
 echo     Email: admin@servicespot.com
 echo     Password: admin123
 echo.
-timeout /t 5
+echo ========================================
+echo   Both terminals will remain open.
+echo   Close this window when done.
+echo ========================================
+echo.
+pause
