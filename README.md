@@ -120,7 +120,7 @@ ServiceSpot/
 ### Prerequisites
 - **Java 21+** installed and configured
 - **Node.js 16+** and npm
-- **PostgreSQL 12+** running locally
+- **MySQL 8+** running locally
 - **Maven** installed
 - **Git** for version control
 
