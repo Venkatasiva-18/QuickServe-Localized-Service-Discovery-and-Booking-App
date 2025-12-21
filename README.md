@@ -73,7 +73,7 @@ A modern, full-stack web application that connects customers with verified servi
 - **Spring Boot 4.0** - Java framework
 - **Spring Data JPA** - ORM and database layer
 - **Spring Security** - Authentication & authorization
-- **PostgreSQL** - Relational database
+- **MySQL** - Relational database
 - **Java 21** - Latest Java features
 - **Maven** - Build automation
 
@@ -136,8 +136,8 @@ ServiceSpot/
    - Create a new PostgreSQL database: `servicespot`
    - Update `application.properties` with your credentials:
    ```properties
-   spring.datasource.url=jdbc:postgresql://localhost:5432/servicespot
-   spring.datasource.username=postgres
+   spring.datasource.url=jdbc:mysql://localhost:3306/servicespot
+   spring.datasource.username=yourusername
    spring.datasource.password=yourpassword
    spring.jpa.hibernate.ddl-auto=update
    ```
