@@ -52,8 +52,13 @@ export default function NearbyServices() {
   const [nearbyDistance, setNearbyDistance] = useState(""); // Input value - empty by default
   const [activeDistance, setActiveDistance] = useState(null); // Applied filter (null = no distance filter)
   const [error, setError] = useState(null);
-  const [showModal, setShowModal] = useState(false);
-  const navigate = useNavigate(); 
+  const [toast, setToast] = useState(null);
+  const navigate = useNavigate();
+
+  const showToast = (message, type = "error") => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 4000);
+  }; 
 
 
 
@@ -178,9 +183,10 @@ export default function NearbyServices() {
     const role = localStorage.getItem("role");
     
     if (!loggedIn) {
-      navigate("/login");
+      showToast("Please log in as a customer to book a service.", "warning");
+      setTimeout(() => navigate("/login"), 1500);
     } else if (role === "provider" || role === "admin") {
-      setShowModal(true);
+      showToast("Providers and admins cannot book services. Only customers can book.", "error");
     } else {
       navigate("/book-service", { state: { providerId } });
     }
@@ -210,30 +216,9 @@ export default function NearbyServices() {
 
   return (
     <div className="nearby-services-container">
-      {showModal && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <div className="modal-icon">⚠️</div>
-            <h2>Register as Customer</h2>
-            <p>Please register as customer for booking services</p>
-            <div className="modal-actions">
-              <button 
-                className="modal-btn modal-btn-login"
-                onClick={() => {
-                  setShowModal(false);
-                  navigate("/login");
-                }}
-              >
-                Go to Login
-              </button>
-              <button 
-                className="modal-btn modal-btn-cancel"
-                onClick={() => setShowModal(false)}
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
+      {toast && (
+        <div className={`toast toast-${toast.type}`}>
+          <p>{toast.message}</p>
         </div>
       )}
       
