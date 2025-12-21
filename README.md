@@ -132,8 +132,8 @@ ServiceSpot/
    cd service-spot/backend
    ```
 
-2. **Configure PostgreSQL**
-   - Create a new PostgreSQL database: `servicespot`
+2. **Configure MySQL**
+   - Create a new MySQL database: `servicespot`
    - Update `application.properties` with your credentials:
    ```properties
    spring.datasource.url=jdbc:mysql://localhost:3306/servicespot
