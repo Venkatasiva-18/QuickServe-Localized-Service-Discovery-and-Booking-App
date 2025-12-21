@@ -140,7 +140,7 @@ export default function Home() {
                 {animated ? (
                   <>
                     <AnimatedCounter 
-                      end={stats.customerSatisfaction * 10} 
+                      end={stats.customerSatisfaction} 
                       duration={2000} 
                       format="decimal" 
                     />
