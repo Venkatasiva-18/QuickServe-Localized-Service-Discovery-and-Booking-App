@@ -2,6 +2,57 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "./RegisterCustomer.css";
+import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from "react-leaflet";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+
+function MapClickHandler({ onLocationSelect }) {
+  useMapEvents({
+    click: (e) => {
+      console.log("Map clicked at:", e.latlng.lat, e.latlng.lng);
+      onLocationSelect([e.latlng.lat, e.latlng.lng]);
+    },
+  });
+  return null;
+}
+
+function MapZoomController({ onCenterChange }) {
+  const map = useMap();
+  
+  const handleZoomIn = () => map.zoomIn();
+  const handleZoomOut = () => map.zoomOut();
+  
+  return (
+    <div style={{
+      position: "absolute",
+      top: "10px",
+      right: "10px",
+      zIndex: 1000,
+      display: "flex",
+      flexDirection: "column",
+      gap: "5px"
+    }}>
+      <button onClick={handleZoomIn} style={{
+        padding: "8px 12px",
+        backgroundColor: "#fff",
+        border: "2px solid #ccc",
+        borderRadius: "4px",
+        cursor: "pointer",
+        fontSize: "16px",
+        fontWeight: "bold"
+      }}>+</button>
+      <button onClick={handleZoomOut} style={{
+        padding: "8px 12px",
+        backgroundColor: "#fff",
+        border: "2px solid #ccc",
+        borderRadius: "4px",
+        cursor: "pointer",
+        fontSize: "16px",
+        fontWeight: "bold"
+      }}>−</button>
+    </div>
+  );
+}
 
 export default function RegisterCustomer() {
   const navigate = useNavigate();
@@ -23,6 +74,9 @@ export default function RegisterCustomer() {
 
   const [imagePreview, setImagePreview] = useState(null);
   const [imageFile, setImageFile] = useState(null);
+  const [showMap, setShowMap] = useState(false);
+  const [mapCenter, setMapCenter] = useState([17.3850, 78.4867]);
+  const [searchInput, setSearchInput] = useState("");
 
   const handleChange = (e) => {
     setFormData({
@@ -43,14 +97,42 @@ export default function RegisterCustomer() {
     }
   };
 
-  const detectLocation = () => {
-    navigator.geolocation.getCurrentPosition((pos) => {
-      setFormData({
-        ...formData,
-        latitude: pos.coords.latitude,
-        longitude: pos.coords.longitude,
-      });
-    });
+  const handleLocationSelect = (coords) => {
+    console.log("Location selected:", coords[0].toFixed(4), coords[1].toFixed(4));
+    const updatedFormData = {
+      ...formData,
+      latitude: coords[0].toFixed(4),
+      longitude: coords[1].toFixed(4),
+    };
+    console.log("Updated form data:", updatedFormData);
+    setFormData(updatedFormData);
+    setShowMap(false);
+  };
+
+  const searchLocation = async () => {
+    if (!searchInput.trim()) {
+      alert("Please enter a city name");
+      return;
+    }
+    
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(searchInput)}&format=json&limit=1`
+      );
+      const data = await response.json();
+      
+      if (data.length > 0) {
+        const lat = parseFloat(data[0].lat);
+        const lon = parseFloat(data[0].lon);
+        setMapCenter([lat, lon]);
+        setSearchInput("");
+      } else {
+        alert("Location not found. Try another city name.");
+      }
+    } catch (err) {
+      console.error("Search error:", err);
+      alert("Error searching location");
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -235,18 +317,104 @@ export default function RegisterCustomer() {
           <legend>Location</legend>
 
           <div className="form-group">
-            <label>Latitude</label>
-            <input type="text" name="latitude" placeholder="Detected automatically" value={formData.latitude} readOnly />
+            <label>Latitude (e.g., 14.4426 for Ongole)</label>
+            <input type="number" step="0.0001" name="latitude" placeholder="e.g., 14.4426" value={formData.latitude} onChange={handleChange} />
           </div>
 
           <div className="form-group">
-            <label>Longitude</label>
-            <input type="text" name="longitude" placeholder="Detected automatically" value={formData.longitude} readOnly />
+            <label>Longitude (e.g., 79.6304 for Ongole)</label>
+            <input type="number" step="0.0001" name="longitude" placeholder="e.g., 79.6304" value={formData.longitude} onChange={handleChange} />
           </div>
 
-          <button type="button" onClick={detectLocation} className="location-btn">
-            Detect My Location
+          <button type="button" onClick={() => setShowMap(!showMap)} className="location-btn">
+            {showMap ? "Close Map" : "Select Location on Map"}
           </button>
+          
+          {showMap && (
+            <div style={{ marginTop: "15px", borderRadius: "8px", overflow: "hidden" }}>
+              <div style={{ display: "flex", gap: "5px", marginBottom: "10px" }}>
+                <input
+                  type="text"
+                  placeholder="Search city (e.g., Ongole, Hyderabad)"
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                  onKeyPress={(e) => e.key === "Enter" && searchLocation()}
+                  style={{
+                    flex: 1,
+                    padding: "10px",
+                    border: "1px solid #ccc",
+                    borderRadius: "4px",
+                    fontSize: "14px"
+                  }}
+                />
+                <button onClick={searchLocation} style={{
+                  padding: "10px 15px",
+                  backgroundColor: "#0A4D68",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "4px",
+                  cursor: "pointer",
+                  fontSize: "14px"
+                }}>Search</button>
+              </div>
+              <p style={{ fontSize: "12px", color: "#666", margin: "5px 0 10px 0" }}>
+                💡 Tip: Scroll to zoom, drag to pan, click on map to select location
+              </p>
+              <div 
+                className="map-container"
+                style={{ 
+                borderRadius: "8px", 
+                overflow: "auto",
+                overflowX: "auto",
+                overflowY: "auto",
+                height: "500px", 
+                position: "relative",
+                border: "2px solid #ddd"
+              }}>
+                <MapContainer 
+                  center={mapCenter} 
+                  zoom={13} 
+                  scrollWheelZoom={true} 
+                  dragging={true}
+                  touchZoom={true}
+                  doubleClickZoom={true}
+                  boxZoom={true}
+                  keyboard={true}
+                  style={{ 
+                    height: "100%", 
+                    width: "100%", 
+                    cursor: "crosshair",
+                    minHeight: "500px"
+                  }}
+                >
+                  <TileLayer
+                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  />
+                  {formData.latitude && formData.longitude && (
+                    <Marker position={[parseFloat(formData.latitude), parseFloat(formData.longitude)]} />
+                  )}
+                  <MapClickHandler onLocationSelect={handleLocationSelect} />
+                  <MapZoomController />
+                </MapContainer>
+                <div style={{
+                  position: "absolute",
+                  bottom: "15px",
+                  left: "50%",
+                  transform: "translateX(-50%)",
+                  backgroundColor: "#0A4D68",
+                  color: "white",
+                  padding: "8px 15px",
+                  borderRadius: "20px",
+                  fontSize: "12px",
+                  zIndex: 999,
+                  textAlign: "center"
+                }}>
+                  📍 Click on map to select location
+                </div>
+              </div>
+            </div>
+          )}
         </fieldset>
 
         <button type="submit" className="submit-btn">REGISTER</button>

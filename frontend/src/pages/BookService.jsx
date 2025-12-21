@@ -80,14 +80,11 @@ export default function BookService() {
     city: ""
   });
 
-  // Read customer ID from localStorage
-  const customerId = localStorage.getItem("customerId");
-
   // Extract search context and handle login redirect
   useEffect(() => {
     if (!localStorage.getItem("loggedIn")) {
       alert("Please login first.");
-      navigate("/login-customer");
+      navigate("/login");
     }
     
     // Extract search context from navigation state
@@ -113,12 +110,15 @@ export default function BookService() {
           setCity(preSelected.city);
         }
       }
+    } else if (location.state?.providerId) {
+      // Handle direct provider selection from NearbyServices
+      setFilterByProviderId(location.state.providerId);
     } else {
       // Clear provider filter if not coming from search results
       setFilterByProviderId(null);
       localStorage.removeItem("selectedProviderId");
     }
-  }, [navigate, location.state?.searchContext, location.state?.preSelectedService]);
+  }, [navigate, location.state?.searchContext, location.state?.preSelectedService, location.state?.providerId]);
 
   // Fetch all categories and services on load
   useEffect(() => {
@@ -129,7 +129,7 @@ export default function BookService() {
         await initializeDemoDataIfNeeded();
         await fetchCategories();
         await fetchAllServices();
-      } catch (err) {
+      } catch {
         setError("Failed to load services. Please try again.");
       } finally {
         setLoading(false);
@@ -146,7 +146,7 @@ export default function BookService() {
         await axios.post("http://localhost:8080/api/init/demo-data");
         await new Promise(resolve => setTimeout(resolve, 1000));
       }
-    } catch (error) {
+    } catch {
       // Silently fail
     }
   };
@@ -156,7 +156,7 @@ export default function BookService() {
     try {
       const res = await axios.get("http://localhost:8080/api/category");
       setCategories(res.data);
-    } catch (error) {
+    } catch {
       // Silently fail
     }
   };
@@ -182,7 +182,7 @@ export default function BookService() {
       const fullServices = res.data || [];
       setAllServices(fullServices);
       setServices(fullServices);
-    } catch (error) {
+    } catch {
       setAllServices([]);
       setServices([]);
     }
@@ -333,14 +333,26 @@ export default function BookService() {
       return;
     }
 
-    if (!customerId) {
-      alert("Customer ID not found. Please login again.");
+    const selectedDate = new Date(bookingDetails.date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    if (selectedDate < today) {
+      alert("Please select a future date for the booking");
       return;
     }
 
-    const customerIdNum = parseInt(customerId);
-    if (isNaN(customerIdNum) || customerIdNum <= 0) {
-      alert("Invalid customer ID. Please login again.");
+    const role = localStorage.getItem("role");
+    const currentUserId = localStorage.getItem("customerId") || localStorage.getItem("providerId") || localStorage.getItem("adminId");
+
+    if (!currentUserId) {
+      alert("User ID not found. Please login again.");
+      return;
+    }
+
+    const userIdNum = parseInt(currentUserId);
+    if (isNaN(userIdNum) || userIdNum <= 0) {
+      alert("Invalid user ID. Please login again.");
       return;
     }
 
@@ -368,9 +380,13 @@ export default function BookService() {
       return;
     }
 
+    if (!selectedService.name || selectedService.name.trim() === "") {
+      alert("Service name is missing. Please select another service.");
+      return;
+    }
+
     try {
       const booking = {
-        customerId: customerIdNum,
         providerId: providerIdNum,
         serviceId: serviceIdNum,
         serviceName: selectedService.name,
@@ -381,12 +397,25 @@ export default function BookService() {
         totalAmount: selectedService.price || 0
       };
 
-      const response = await axios.post("http://localhost:8080/booking/create", booking);
+      if (role === "provider") {
+        booking.providerBookerId = userIdNum;
+      } else {
+        booking.customerId = userIdNum;
+      }
+
+      await axios.post("http://localhost:8080/booking/create", booking);
       alert("Booking Successful!");
       localStorage.removeItem("selectedProviderId");
-      navigate("/customer-bookings");
-    } catch (error) {
-      const errorMsg = error.response?.data || error.message;
+      
+      let redirectPath = "/customer-bookings";
+      if (role === "provider") {
+        redirectPath = "/provider-bookings";
+      } else if (role === "admin") {
+        redirectPath = "/admin-dashboard";
+      }
+      navigate(redirectPath);
+    } catch (err) {
+      const errorMsg = err.response?.data || err.message;
       alert("Booking failed: " + (typeof errorMsg === 'string' ? errorMsg : errorMsg.error || JSON.stringify(errorMsg)));
     }
   };
@@ -397,7 +426,7 @@ export default function BookService() {
     try {
       await fetchCategories();
       await fetchAllServices();
-    } catch (err) {
+    } catch {
       setError("Failed to refresh services");
     } finally {
       setLoading(false);
@@ -862,6 +891,8 @@ export default function BookService() {
             <FaCalendarAlt /> Select Date:
             <input
               type="date"
+              min={new Date().toISOString().split('T')[0]}
+              value={bookingDetails.date}
               onChange={(e) =>
                 setBookingDetails({ ...bookingDetails, date: e.target.value })
               }
@@ -872,6 +903,7 @@ export default function BookService() {
             <FaClock /> Select Time:
             <input
               type="time"
+              value={bookingDetails.time}
               onChange={(e) =>
                 setBookingDetails({ ...bookingDetails, time: e.target.value })
               }

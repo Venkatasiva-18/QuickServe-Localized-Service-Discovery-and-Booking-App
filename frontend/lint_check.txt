@@ -1,0 +1,78 @@
+
+> service-spot-frontend@0.0.0 lint
+> eslint .
+
+
+c:\Users\Admin\Desktop\service-spot\frontend\src\pages\AdminContacts.jsx
+  19:6  warning  React Hook useEffect has a missing dependency: 'filterContacts'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+c:\Users\Admin\Desktop\service-spot\frontend\src\pages\AdminFAQ.jsx
+  18:10  error  'categories' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+c:\Users\Admin\Desktop\service-spot\frontend\src\pages\CustomerBookings.jsx
+  23:6  warning  React Hook useEffect has missing dependencies: 'customerId' and 'fetchBookings'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+c:\Users\Admin\Desktop\service-spot\frontend\src\pages\CustomerDashboard.jsx
+  14:7  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  12 |     const n = localStorage.getItem("customerName");
+  13 |     if (n && n !== "undefined" && n !== "null") {
+> 14 |       setName(n);
+     |       ^^^^^^^ Avoid calling setState() directly within an effect
+  15 |     }
+  16 |   }, []);
+  17 |  react-hooks/set-state-in-effect
+  23:6  warning  React Hook useEffect has a missing dependency: 'navigate'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   react-hooks/exhaustive-deps
+
+c:\Users\Admin\Desktop\service-spot\frontend\src\pages\CustomerUpdate.jsx
+  19:30  error    'onCenterChange' is defined but never used                                                                     no-unused-vars
+  92:6   warning  React Hook useEffect has a missing dependency: 'customerId'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+c:\Users\Admin\Desktop\service-spot\frontend\src\pages\LoginCustomer.jsx
+  18:6  warning  React Hook useEffect has a missing dependency: 'navigate'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+c:\Users\Admin\Desktop\service-spot\frontend\src\pages\NearbyServices.jsx
+  122:6  warning  React Hook useEffect has a missing dependency: 'fetchProviders'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+c:\Users\Admin\Desktop\service-spot\frontend\src\pages\ProviderBookings.jsx
+  20:6  warning  React Hook useEffect has missing dependencies: 'fetchBookings' and 'providerId'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+c:\Users\Admin\Desktop\service-spot\frontend\src\pages\ProviderDashboard.jsx
+  119:5  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  117 |     }
+  118 |
+> 119 |     fetchProviderData();
+      |     ^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  120 |     fetchCategories();
+  121 |   }, [providerId, navigate]);
+  122 |  react-hooks/set-state-in-effect
+  121:6  warning  React Hook useEffect has a missing dependency: 'fetchProviderData'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     react-hooks/exhaustive-deps
+
+c:\Users\Admin\Desktop\service-spot\frontend\src\pages\ProviderUpdate.jsx
+   32:30  error    'onCenterChange' is defined but never used                                                                     no-unused-vars
+   91:10  error    'error' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                          no-unused-vars
+   91:17  error    'setError' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                       no-unused-vars
+  130:6   warning  React Hook useEffect has a missing dependency: 'providerId'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+c:\Users\Admin\Desktop\service-spot\frontend\src\pages\RegisterCustomer.jsx
+  19:30  error  'onCenterChange' is defined but never used  no-unused-vars
+
+c:\Users\Admin\Desktop\service-spot\frontend\src\pages\SearchResults.jsx
+  47:11  error    'queryString' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                                   no-unused-vars
+  80:6   warning  React Hook useEffect has missing dependencies: 'priceRange' and 'sortBy'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+✖ 19 problems (9 errors, 10 warnings)
+

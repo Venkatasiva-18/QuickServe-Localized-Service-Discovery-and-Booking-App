@@ -51,6 +51,13 @@ public class BookingController {
         } else {
             providerProfileImage = null;
         }
+
+        final String providerBookerProfileImage;
+        if (booking.getProviderBooker() != null && booking.getProviderBooker().getProfileImage() != null) {
+            providerBookerProfileImage = "data:image/jpeg;base64," + java.util.Base64.getEncoder().encodeToString(booking.getProviderBooker().getProfileImage());
+        } else {
+            providerBookerProfileImage = null;
+        }
         
         return new HashMap<String, Object>() {{
             put("id", booking.getId());
@@ -69,6 +76,11 @@ public class BookingController {
             put("customerPhone", booking.getCustomer() != null ? booking.getCustomer().getPhone() : null);
             put("customerEmail", booking.getCustomer() != null ? booking.getCustomer().getEmail() : null);
             put("customerProfileImage", customerProfileImage);
+            put("providerBookerId", booking.getProviderBooker() != null ? booking.getProviderBooker().getId() : null);
+            put("providerBookerName", booking.getProviderBooker() != null ? booking.getProviderBooker().getName() : null);
+            put("providerBookerPhone", booking.getProviderBooker() != null ? booking.getProviderBooker().getPhone() : null);
+            put("providerBookerEmail", booking.getProviderBooker() != null ? booking.getProviderBooker().getEmail() : null);
+            put("providerBookerProfileImage", providerBookerProfileImage);
             put("providerId", booking.getProvider() != null ? booking.getProvider().getId() : null);
             put("providerName", booking.getProvider() != null ? booking.getProvider().getName() : null);
             put("providerPhone", booking.getProvider() != null ? booking.getProvider().getPhone() : null);
@@ -81,8 +93,9 @@ public class BookingController {
     @PostMapping("/create")
     public ResponseEntity<?> createBooking(@RequestBody BookingDTO bookingDTO) {
         try {
-            if (bookingDTO.getCustomerId() == null || bookingDTO.getCustomerId() <= 0) {
-                return ResponseEntity.badRequest().body("Customer ID is required");
+            if ((bookingDTO.getCustomerId() == null || bookingDTO.getCustomerId() <= 0) && 
+                (bookingDTO.getProviderBookerId() == null || bookingDTO.getProviderBookerId() <= 0)) {
+                return ResponseEntity.badRequest().body("Customer ID or Provider Booker ID is required");
             }
             if (bookingDTO.getProviderId() == null || bookingDTO.getProviderId() <= 0) {
                 return ResponseEntity.badRequest().body("Provider ID is required");
@@ -97,9 +110,20 @@ public class BookingController {
                 return ResponseEntity.badRequest().body("Booking time is required");
             }
             
-            Optional<Customer> customer = customerRepo.findById(bookingDTO.getCustomerId());
-            if (!customer.isPresent()) {
-                return ResponseEntity.badRequest().body("Customer not found");
+            Optional<Customer> customer = Optional.empty();
+            if (bookingDTO.getCustomerId() != null && bookingDTO.getCustomerId() > 0) {
+                customer = customerRepo.findById(bookingDTO.getCustomerId());
+                if (!customer.isPresent()) {
+                    return ResponseEntity.badRequest().body("Customer not found");
+                }
+            }
+
+            Optional<Provider> providerBooker = Optional.empty();
+            if (bookingDTO.getProviderBookerId() != null && bookingDTO.getProviderBookerId() > 0) {
+                providerBooker = providerRepo.findById(bookingDTO.getProviderBookerId());
+                if (!providerBooker.isPresent()) {
+                    return ResponseEntity.badRequest().body("Provider Booker not found");
+                }
             }
             
             Optional<Provider> provider = providerRepo.findById(bookingDTO.getProviderId());
@@ -133,7 +157,8 @@ public class BookingController {
             }
             
             Booking booking = Booking.builder()
-                    .customer(customer.get())
+                    .customer(customer.orElse(null))
+                    .providerBooker(providerBooker.orElse(null))
                     .provider(provider.get())
                     .service(service.get())
                     .serviceName(bookingDTO.getServiceName() != null ? bookingDTO.getServiceName() : service.get().getName())
@@ -173,6 +198,15 @@ public class BookingController {
     @GetMapping("/provider/{providerId}")
     public ResponseEntity<List<?>> getProviderBookings(@PathVariable Long providerId) {
         List<?> bookings = bookingService.getProviderBookings(providerId)
+                .stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(bookings);
+    }
+
+    @GetMapping("/provider-made/{providerId}")
+    public ResponseEntity<List<?>> getProviderMadeBookings(@PathVariable Long providerId) {
+        List<?> bookings = bookingService.getProviderMadeBookings(providerId)
                 .stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());

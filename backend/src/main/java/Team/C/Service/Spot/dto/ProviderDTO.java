@@ -28,4 +28,6 @@ public class ProviderDTO {
     private Boolean verified;
     private String password;
     private String profileImage;
+    private Double distance;
+    private Long activeServiceCount;
 }

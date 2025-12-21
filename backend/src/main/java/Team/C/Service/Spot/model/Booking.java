@@ -24,8 +24,12 @@ public class Booking {
     private Long id;
     
     @ManyToOne
-    @JoinColumn(name = "customer_id", nullable = false)
+    @JoinColumn(name = "customer_id", nullable = true)
     private Customer customer;
+
+    @ManyToOne
+    @JoinColumn(name = "provider_booker_id", nullable = true)
+    private Provider providerBooker;
     
     @ManyToOne
     @JoinColumn(name = "provider_id", nullable = false)

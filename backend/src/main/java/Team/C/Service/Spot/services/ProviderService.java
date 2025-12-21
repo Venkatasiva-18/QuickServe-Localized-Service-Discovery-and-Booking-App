@@ -9,12 +9,14 @@ import lombok.RequiredArgsConstructor;
 
 import Team.C.Service.Spot.model.Provider;
 import Team.C.Service.Spot.repositery.ProviderRepo;
+import Team.C.Service.Spot.repositery.ServiceRepo;
 
 @Service
 @RequiredArgsConstructor
 public class ProviderService {
 
     private final ProviderRepo providerRepo;
+    private final ServiceRepo serviceRepo;
 
     public Provider signup(Provider provider) {
         return providerRepo.save(provider);
@@ -146,5 +148,36 @@ public class ProviderService {
 
     public List<String> getDistinctAreasByCity(String city) {
         return providerRepo.findDistinctAreasByCity(city);
+    }
+
+    public List<Provider> getNearbyVerifiedProviders(Double userLat, Double userLon, Double radiusKm) {
+        List<Provider> verifiedProviders = getVerifiedProviders();
+        return verifiedProviders.stream()
+                .filter(p -> p.getLatitude() != null && p.getLongitude() != null)
+                .filter(p -> calculateDistance(userLat, userLon, p.getLatitude(), p.getLongitude()) <= radiusKm)
+                .toList();
+    }
+
+    public List<Provider> getNearbyProviders(Double userLat, Double userLon, Double radiusKm) {
+        List<Provider> allProviders = getAllProviders();
+        return allProviders.stream()
+                .filter(p -> p.getLatitude() != null && p.getLongitude() != null)
+                .filter(p -> calculateDistance(userLat, userLon, p.getLatitude(), p.getLongitude()) <= radiusKm)
+                .toList();
+    }
+
+    private double calculateDistance(Double lat1, Double lon1, Double lat2, Double lon2) {
+        final int R = 6371;
+        double latDistance = Math.toRadians(lat2 - lat1);
+        double lonDistance = Math.toRadians(lon2 - lon1);
+        double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
+                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
+                * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
+    }
+
+    public Long getActiveServiceCount(Long providerId) {
+        return serviceRepo.countActiveServicesByProviderId(providerId);
     }
 }
