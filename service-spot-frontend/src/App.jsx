@@ -25,6 +25,8 @@ import CustomerUpdate from "./pages/CustomerUpdate";
 import CustomerBookings from "./pages/CustomerBookings";
 import BookService from "./pages/BookService";
 
+import TrackLocation from "./pages/TrackLocation";
+
 // Provider
 import ProviderProfile from "./pages/ProviderProfile";
 import ProviderUpdate from "./pages/ProviderUpdate";
@@ -65,6 +67,9 @@ export default function App() {
         <Route path="/customer-update" element={<CustomerUpdate />} />
         <Route path="/customer-bookings" element={<CustomerBookings />} />
         <Route path="/book-service" element={<BookService />} />
+
+        <Route path="/track-location" element={<TrackLocation />} />
+
 
         {/* Provider */}
         <Route path="/provider-profile" element={<ProviderProfile />} />

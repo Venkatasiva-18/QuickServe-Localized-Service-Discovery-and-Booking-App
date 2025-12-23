@@ -1,0 +1,53 @@
+.track-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa, #e3f2fd);
+  padding: 40px;
+  text-align: center;
+}
+
+.track-container h1 {
+  color: #0a4d68;
+  margin-bottom: 30px;
+}
+
+.location-card {
+  max-width: 450px;
+  margin: auto;
+  background: white;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+}
+
+.location-card p {
+  font-size: 15px;
+  margin: 10px 0;
+}
+
+.updated {
+  font-size: 13px;
+  color: gray;
+}
+
+.map-placeholder {
+  margin-top: 20px;
+  height: 200px;
+  border-radius: 10px;
+  background: repeating-linear-gradient(
+    45deg,
+    #e0f7fa,
+    #e0f7fa 10px,
+    #b2ebf2 10px,
+    #b2ebf2 20px
+  );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  color: #006064;
+}
+
+.error {
+  color: red;
+  font-weight: 600;
+}

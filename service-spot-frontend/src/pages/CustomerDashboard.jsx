@@ -58,8 +58,10 @@ export default function CustomerDashboard() {
           <FaMapMarkerAlt className="action-icon" />
           <h4>Track Location</h4>
           <p>Detect or change your saved location</p>
-          <button onClick={() => navigate("/location")}>Track</button>
+          <button onClick={() => navigate("/track-location")}>Track</button>
         </div>
+        
+
 
         <div className="action-card">
           <FaHeadset className="action-icon" />
