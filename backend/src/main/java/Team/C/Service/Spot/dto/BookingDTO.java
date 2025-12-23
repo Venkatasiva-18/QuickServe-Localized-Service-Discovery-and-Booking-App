@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class BookingDTO {
     private Long customerId;
+    private Long providerBookerId;
     private Long providerId;
     private Long serviceId;
     private String serviceName;

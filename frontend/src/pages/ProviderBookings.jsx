@@ -7,13 +7,14 @@ export default function ProviderBookings() {
 
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const providerId = localStorage.getItem("providerId");
 
   useEffect(() => {
     if (providerId) {
       fetchBookings();
     } else {
-      alert("Provider ID not found. Please login again.");
+      setError("Provider ID not found. Please login again.");
       setLoading(false);
     }
   }, []);
@@ -21,13 +22,14 @@ export default function ProviderBookings() {
   const fetchBookings = async () => {
     try {
       setLoading(true);
+      setError(null);
       const res = await axios.get(
         `http://localhost:8080/booking/provider/${providerId}`
       );
       setBookings(res.data || []);
     } catch (error) {
       console.error("Error fetching bookings:", error);
-      alert("Failed to load booking requests");
+      setError("Failed to load booking requests: " + (error.response?.data || error.message));
     } finally {
       setLoading(false);
     }
@@ -83,7 +85,14 @@ export default function ProviderBookings() {
 
       {loading && <p className="loading-state">Loading booking requests...</p>}
 
-      {!loading && (
+      {error && (
+        <div className="error-state">
+          <p>{error}</p>
+          <button onClick={fetchBookings} className="retry-btn">Retry</button>
+        </div>
+      )}
+
+      {!loading && !error && (
         <div className="bookings-list">
           {bookings.length === 0 ? (
             <p className="no-bookings">No booking requests yet.</p>
@@ -100,9 +109,15 @@ export default function ProviderBookings() {
                 <div className="customer-profile-section">
                   <div className="customer-avatar">
                     {booking.customerProfileImage ? (
-                      <img src={booking.customerProfileImage} alt="Customer" className="customer-profile-img" onError={(e) => {
-                        e.target.style.display = 'none';
-                      }} />
+                      <img 
+                        src={booking.customerProfileImage} 
+                        alt="Customer" 
+                        className="customer-profile-img" 
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                          e.target.onerror = null;
+                        }} 
+                      />
                     ) : (
                       <FaUserCircle size={50} color="#0A4D68" />
                     )}

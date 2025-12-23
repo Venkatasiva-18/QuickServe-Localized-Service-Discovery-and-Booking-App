@@ -67,25 +67,47 @@
 
 :root {
   --bg-primary: #FFFFFF;
-  --bg-secondary: #F0F9FF;
-  --bg-tertiary: #E0F2FE;
-  --text-primary: #0F172A;
-  --text-muted: #64748B;
-  --text-light: #94A3B8;
-  --accent: #3B82F6;
-  --accent-dark: #1E40AF;
-  --accent-light: #60A5FA;
-  --accent-soft: #DBEAFE;
+  --bg-secondary: #F8F9FF;
+  --bg-tertiary: #EFF0FF;
+  --text-primary: #0A0E27;
+  --text-muted: #6B7280;
+  --text-light: #9CA3AF;
+  
+  /* Vibrant Primary Colors */
+  --accent: #6366F1;
+  --accent-dark: #4F46E5;
+  --accent-light: #818CF8;
+  --accent-soft: #E0E7FF;
+  
+  /* Vibrant Secondary Colors */
+  --secondary: #EC4899;
+  --secondary-dark: #BE185D;
+  --secondary-light: #F472B6;
+  
+  /* Vibrant Tertiary Colors */
+  --tertiary: #F97316;
+  --tertiary-dark: #D97706;
+  --tertiary-light: #FB923C;
+  
+  /* Success & Status Colors */
   --success: #10B981;
   --success-light: #D1FAE5;
   --warning: #F59E0B;
   --warning-light: #FEF3C7;
   --error: #EF4444;
   --error-light: #FEE2E2;
-  --card-bg: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(79, 70, 229, 0.05) 100%);
-  --card-shadow: 0 10px 30px rgba(59, 130, 246, 0.1);
-  --border-color: rgba(59, 130, 246, 0.15);
-  --border-secondary: rgba(79, 70, 229, 0.1);
+  
+  /* Cyan & Teal */
+  --cyan: #06B6D4;
+  --teal: #14B8A6;
+  
+  /* Enhanced Backgrounds & Shadows */
+  --card-bg: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(168, 85, 247, 0.08) 100%);
+  --card-shadow: 0 12px 40px rgba(99, 102, 241, 0.15);
+  --glow-shadow: 0 8px 32px rgba(236, 72, 153, 0.2);
+  --border-color: rgba(99, 102, 241, 0.2);
+  --border-secondary: rgba(168, 85, 247, 0.15);
+  
   scroll-behavior: smooth;
 }
 

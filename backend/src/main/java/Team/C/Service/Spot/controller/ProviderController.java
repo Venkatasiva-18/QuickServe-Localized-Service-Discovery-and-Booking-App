@@ -49,6 +49,13 @@ public class ProviderController {
                 .build();
     }
 
+    private ProviderDTO mapToDTOWithServiceCount(Provider provider) {
+        ProviderDTO dto = mapToDTO(provider);
+        Long activeServiceCount = providerService.getActiveServiceCount(provider.getId());
+        dto.setActiveServiceCount(activeServiceCount);
+        return dto;
+    }
+
     private Provider mapToEntity(ProviderDTO dto) {
         Double latitude = dto.getLatitude() != null ? dto.getLatitude() : null;
         Double longitude = dto.getLongitude() != null ? dto.getLongitude() : null;
@@ -179,6 +186,39 @@ public class ProviderController {
         List<Provider> providers = providerService.getVerifiedProviders();
         List<ProviderDTO> dtos = providers.stream().map(this::mapToDTO).collect(Collectors.toList());
         return ResponseEntity.ok(dtos);
+    }
+
+    @GetMapping("/nearby")
+    public ResponseEntity<List<ProviderDTO>> getNearbyProviders(
+            @RequestParam(name = "lat") Double latitude,
+            @RequestParam(name = "lon") Double longitude,
+            @RequestParam(name = "radius", defaultValue = "20") Double radiusKm) {
+        try {
+            List<Provider> providers = providerService.getNearbyProviders(latitude, longitude, radiusKm);
+            
+            List<ProviderDTO> dtos = providers.stream().map(provider -> {
+                ProviderDTO dto = mapToDTOWithServiceCount(provider);
+                double distance = calculateDistance(latitude, longitude, provider.getLatitude(), provider.getLongitude());
+                dto.setDistance(distance);
+                return dto;
+            }).sorted((p1, p2) -> Double.compare(p1.getDistance(), p2.getDistance()))
+            .collect(Collectors.toList());
+            
+            return ResponseEntity.ok(dtos);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new java.util.ArrayList<>());
+        }
+    }
+
+    private double calculateDistance(Double lat1, Double lon1, Double lat2, Double lon2) {
+        final int R = 6371;
+        double latDistance = Math.toRadians(lat2 - lat1);
+        double lonDistance = Math.toRadians(lon2 - lon1);
+        double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
+                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
+                * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
     }
 
     @GetMapping("/unverified/all")

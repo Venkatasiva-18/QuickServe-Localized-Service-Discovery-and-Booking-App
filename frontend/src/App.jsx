@@ -39,6 +39,7 @@ import AdminContacts from "./pages/AdminContacts";
 
 // Other
 import SearchResults from "./pages/SearchResults";
+import NearbyServices from "./pages/NearbyServices";
 import Contact from "./pages/Contact";
 
 export default function App() {
@@ -83,6 +84,7 @@ export default function App() {
 
         {/* Contact & Search */}
         <Route path="/search" element={<SearchResults />} />
+        <Route path="/nearby-services" element={<NearbyServices />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/contact-help" element={<Contact />} />
 

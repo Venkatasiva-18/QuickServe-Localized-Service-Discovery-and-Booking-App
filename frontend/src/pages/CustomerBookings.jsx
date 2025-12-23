@@ -120,9 +120,15 @@ export default function CustomerBookings() {
 
               <div className="provider-info">
                 {b.providerProfileImage && (
-                  <img src={b.providerProfileImage} alt="Provider" className="provider-avatar" onError={(e) => {
-                    e.target.style.display = 'none';
-                  }} />
+                  <img 
+                    src={b.providerProfileImage} 
+                    alt="Provider" 
+                    className="provider-avatar" 
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      e.target.onerror = null;
+                    }} 
+                  />
                 )}
                 <div>
                   <p><FaUserTie /> Provider: {b.providerName || `ID: ${b.providerId}`}</p>
