@@ -388,9 +388,8 @@ For issues, features requests, or questions:
 
 ## 🚀 Future Enhancements
 
-- Payment gateway integration (Stripe/PayPal)
-- Real-time chat between customers and providers
-- Video call capabilities for consultations
+
+
 - Advanced analytics dashboard
 - Mobile app (React Native)
 - Email notifications and reminders
