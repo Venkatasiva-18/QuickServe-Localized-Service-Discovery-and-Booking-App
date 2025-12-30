@@ -40,7 +40,7 @@ public class Article {
     @Column(columnDefinition = "BOOLEAN DEFAULT false")
     private Boolean isPublished = false;
     
-    @Column(name = "created_at", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    @Column(name = "created_at")
     @Temporal(TemporalType.TIMESTAMP)
     private Date createdAt = new Date();
     
@@ -48,7 +48,7 @@ public class Article {
     @Temporal(TemporalType.TIMESTAMP)
     private Date publishedAt;
     
-    @Column(name = "updated_at", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP")
+    @Column(name = "updated_at")
     @Temporal(TemporalType.TIMESTAMP)
     private Date updatedAt = new Date();
 }

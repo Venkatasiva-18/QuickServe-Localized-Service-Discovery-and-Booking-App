@@ -1,6 +1,6 @@
 # ServiceSpot - Professional Service Booking Platform
 
-A modern, full-stack web application that connects customers with verified service professionals. Built with **React**, **Spring Boot**, and **PostgreSQL**, ServiceSpot streamlines the process of finding, comparing, and booking trusted service providers.
+A modern, full-stack web application that connects customers with verified service professionals. Built with **React**, **Spring Boot**, and **MySQL**, ServiceSpot streamlines the process of finding, comparing, and booking trusted service providers.
 
 ---
 
@@ -42,6 +42,8 @@ A modern, full-stack web application that connects customers with verified servi
 - 💳 **Secure Booking**: Book services with transparent pricing
 - 📱 **Responsive Design**: Works seamlessly on all devices
 - 📊 **Real-Time Tracking**: Monitor booking status from request to completion
+- 🔔 **Real-Time Notifications**: Instant booking updates via WebSocket
+- 📧 **OTP Verification**: Secure email verification during registration
 
 ### For Service Providers
 - 📝 **Profile Management**: Complete service listings and availability
@@ -49,12 +51,14 @@ A modern, full-stack web application that connects customers with verified servi
 - 💰 **Transparent Pricing**: Set and manage service rates
 - 📈 **Performance Analytics**: Track completed jobs and customer ratings
 - 🔔 **Booking Notifications**: Real-time alerts for new requests
+- ⭐ **Review Notifications**: Instant alerts when customers leave reviews
 
 ### For Administrators
 - 👥 **User Management**: Manage customers, providers, and staff
 - ✔️ **Verification Control**: Approve/reject provider verifications
 - 📊 **System Statistics**: Track platform metrics and analytics
 - 🛡️ **Content Moderation**: Monitor and manage platform content
+- 🔔 **Admin Notifications**: Alerts for new registrations and contact form submissions
 
 ---
 
@@ -70,11 +74,12 @@ A modern, full-stack web application that connects customers with verified servi
 - **CSS3** - Modern styling with gradients and animations
 
 ### Backend
-- **Spring Boot 4.0** - Java framework
+- **Spring Boot 3.3.4** - Java framework
 - **Spring Data JPA** - ORM and database layer
-- **Spring Security** - Authentication & authorization
+- **Spring WebSocket (STOMP)** - Real-time notifications
 - **MySQL** - Relational database
 - **Java 21** - Latest Java features
+- **JavaMailSender** - OTP email verification
 - **Maven** - Build automation
 
 ### DevOps & Tools
@@ -309,8 +314,8 @@ java -jar target/Service-Spot-0.0.1-SNAPSHOT.jar
 
 ## 🔐 Security Features
 
-- Password encryption with Spring Security
-- JWT-based authentication
+- Password encryption with BCrypt
+- OTP-based email verification for registration
 - CORS configuration for frontend-backend communication
 - Role-based authorization on API endpoints
 - XSS and CSRF protection
@@ -388,13 +393,12 @@ For issues, features requests, or questions:
 
 ## 🚀 Future Enhancements
 
-
-
 - Advanced analytics dashboard
 - Mobile app (React Native)
-- Email notifications and reminders
+- Push notifications for mobile devices
 - Service subscription plans
 - Rating and review moderation system
+- Payment gateway integration
 
 ---
 

@@ -18,10 +18,10 @@ function MapClickHandler({ onLocationSelect }) {
 
 function MapZoomController({ onCenterChange }) {
   const map = useMap();
-  
+
   const handleZoomIn = () => map.zoomIn();
   const handleZoomOut = () => map.zoomOut();
-  
+
   return (
     <div style={{
       position: "absolute",
@@ -77,6 +77,7 @@ export default function RegisterCustomer() {
   const [showMap, setShowMap] = useState(false);
   const [mapCenter, setMapCenter] = useState([17.3850, 78.4867]);
   const [searchInput, setSearchInput] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     setFormData({
@@ -114,13 +115,13 @@ export default function RegisterCustomer() {
       alert("Please enter a city name");
       return;
     }
-    
+
     try {
       const response = await fetch(
         `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(searchInput)}&format=json&limit=1`
       );
       const data = await response.json();
-      
+
       if (data.length > 0) {
         const lat = parseFloat(data[0].lat);
         const lon = parseFloat(data[0].lon);
@@ -142,6 +143,13 @@ export default function RegisterCustomer() {
       alert("Passwords do not match!");
       return;
     }
+
+    if (formData.password.length < 6) {
+      alert("Password must be at least 6 characters long!");
+      return;
+    }
+
+    setLoading(true);
 
     try {
       const payload = {
@@ -167,39 +175,45 @@ export default function RegisterCustomer() {
 
       if (response.status === 201 || response.status === 200) {
         const customerId = response.data.id;
-        
+        const userEmail = response.data.email || formData.email;
+
+        // Upload profile image if provided
         if (imageFile && typeof imageFile === 'string' && imageFile.startsWith('data:')) {
           try {
             const base64String = imageFile.split(',')[1];
             console.log("Uploading image with base64 length:", base64String.length);
-            
-            const formData = new FormData();
+
+            const imageFormData = new FormData();
             const binaryString = atob(base64String);
             const bytes = new Uint8Array(binaryString.length);
             for (let i = 0; i < binaryString.length; i++) {
               bytes[i] = binaryString.charCodeAt(i);
             }
             const blob = new Blob([bytes], { type: 'image/png' });
-            formData.append('file', blob, 'profile.png');
-            
-            const imgResponse = await axios.post(`http://localhost:8080/api/customer/${customerId}/upload-image`, formData, {
+            imageFormData.append('file', blob, 'profile.png');
+
+            await axios.post(`http://localhost:8080/api/customer/${customerId}/upload-image`, imageFormData, {
               headers: {
                 "Content-Type": "multipart/form-data"
               }
             });
-            console.log("Image upload successful:", imgResponse.data);
+            console.log("Image upload successful");
           } catch (imgErr) {
-            console.error("Image upload failed:", imgErr.response?.data || imgErr.message);
+            console.error("Image upload failed:", imgErr.message);
+            // Don't block registration if image upload fails
           }
         }
-        
-        alert("Customer Registered Successfully!");
-        navigate("/login-customer");
+
+        // ⭐ Navigate directly to login page (no OTP required)
+        alert("Registration Successful! You can now login with your credentials.");
+        navigate("/login");
       }
     } catch (err) {
       const errorMsg = err.response?.data?.message || err.message || "Registration failed. Please try again.";
       alert(errorMsg);
       console.error("Registration error:", err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -216,8 +230,8 @@ export default function RegisterCustomer() {
             {imagePreview ? (
               <div className="image-preview-circle">
                 <img src={imagePreview} alt="Preview" className="circle-image" />
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   className="remove-circle-btn"
                   onClick={() => {
                     setImagePreview(null);
@@ -233,11 +247,12 @@ export default function RegisterCustomer() {
                 <span className="circle-upload-icon">📷</span>
               </div>
             )}
-            <input 
-              type="file" 
-              accept="image/*" 
+            <input
+              type="file"
+              accept="image/*"
               onChange={handleImageChange}
               className="image-input"
+              disabled={loading}
             />
           </div>
         </div>
@@ -247,18 +262,39 @@ export default function RegisterCustomer() {
           <legend>Personal Details</legend>
 
           <div className="form-group">
-            <label>Full Name</label>
-            <input type="text" name="name" placeholder="e.g., John Doe" required onChange={handleChange} />
+            <label>Full Name *</label>
+            <input
+              type="text"
+              name="name"
+              placeholder="e.g., John Doe"
+              required
+              onChange={handleChange}
+              disabled={loading}
+            />
           </div>
 
           <div className="form-group">
-            <label>Email</label>
-            <input type="email" name="email" placeholder="e.g., john@example.com" required onChange={handleChange} />
+            <label>Email *</label>
+            <input
+              type="email"
+              name="email"
+              placeholder="e.g., john@example.com"
+              required
+              onChange={handleChange}
+              disabled={loading}
+            />
           </div>
 
           <div className="form-group">
-            <label>Phone Number</label>
-            <input type="text" name="mobile" placeholder="e.g., 9876543210" required onChange={handleChange} />
+            <label>Phone Number *</label>
+            <input
+              type="text"
+              name="mobile"
+              placeholder="e.g., 9876543210"
+              required
+              onChange={handleChange}
+              disabled={loading}
+            />
           </div>
         </fieldset>
 
@@ -267,33 +303,75 @@ export default function RegisterCustomer() {
           <legend>Address Details</legend>
 
           <div className="form-group">
-            <label>Door Number</label>
-            <input type="text" name="doorNo" placeholder="e.g., 42" required onChange={handleChange} />
+            <label>Door Number *</label>
+            <input
+              type="text"
+              name="doorNo"
+              placeholder="e.g., 42"
+              required
+              onChange={handleChange}
+              disabled={loading}
+            />
           </div>
 
           <div className="form-group">
-            <label>Address Line</label>
-            <input type="text" name="addressLine" placeholder="e.g., Main Street, Sector 5" required onChange={handleChange} />
+            <label>Address Line *</label>
+            <input
+              type="text"
+              name="addressLine"
+              placeholder="e.g., Main Street, Sector 5"
+              required
+              onChange={handleChange}
+              disabled={loading}
+            />
           </div>
 
           <div className="form-group">
-            <label>City</label>
-            <input type="text" name="city" placeholder="e.g., Mumbai" required onChange={handleChange} />
+            <label>City *</label>
+            <input
+              type="text"
+              name="city"
+              placeholder="e.g., Mumbai"
+              required
+              onChange={handleChange}
+              disabled={loading}
+            />
           </div>
 
           <div className="form-group">
-            <label>Pincode</label>
-            <input type="text" name="pincode" placeholder="e.g., 400001" required onChange={handleChange} />
+            <label>Pincode *</label>
+            <input
+              type="text"
+              name="pincode"
+              placeholder="e.g., 400001"
+              required
+              onChange={handleChange}
+              disabled={loading}
+            />
           </div>
 
           <div className="form-group">
-            <label>State</label>
-            <input type="text" name="state" placeholder="e.g., Maharashtra" required onChange={handleChange} />
+            <label>State *</label>
+            <input
+              type="text"
+              name="state"
+              placeholder="e.g., Maharashtra"
+              required
+              onChange={handleChange}
+              disabled={loading}
+            />
           </div>
 
           <div className="form-group">
-            <label>Country</label>
-            <input type="text" name="country" placeholder="e.g., India" required onChange={handleChange} />
+            <label>Country *</label>
+            <input
+              type="text"
+              name="country"
+              placeholder="e.g., India"
+              required
+              onChange={handleChange}
+              disabled={loading}
+            />
           </div>
         </fieldset>
 
@@ -302,89 +380,100 @@ export default function RegisterCustomer() {
           <legend>Security</legend>
 
           <div className="form-group">
-            <label>Password</label>
-            <input type="password" name="password" placeholder="At least 8 characters" required onChange={handleChange} />
+            <label>Password *</label>
+            <input
+              type="password"
+              name="password"
+              placeholder="At least 6 characters"
+              required
+              onChange={handleChange}
+              disabled={loading}
+              minLength="6"
+            />
           </div>
 
           <div className="form-group">
-            <label>Confirm Password</label>
-            <input type="password" name="confirmPassword" placeholder="Re-enter your password" required onChange={handleChange} />
+            <label>Confirm Password *</label>
+            <input
+              type="password"
+              name="confirmPassword"
+              placeholder="Re-enter your password"
+              required
+              onChange={handleChange}
+              disabled={loading}
+              minLength="6"
+            />
           </div>
         </fieldset>
 
         {/* Location */}
         <fieldset className="fieldset-box">
-          <legend>Location</legend>
+          <legend>Location (Optional)</legend>
 
           <div className="form-group">
             <label>Latitude (e.g., 14.4426 for Ongole)</label>
-            <input type="number" step="0.0001" name="latitude" placeholder="e.g., 14.4426" value={formData.latitude} onChange={handleChange} />
+            <input
+              type="number"
+              step="0.0001"
+              name="latitude"
+              placeholder="e.g., 14.4426"
+              value={formData.latitude}
+              onChange={handleChange}
+              disabled={loading}
+            />
           </div>
 
           <div className="form-group">
             <label>Longitude (e.g., 79.6304 for Ongole)</label>
-            <input type="number" step="0.0001" name="longitude" placeholder="e.g., 79.6304" value={formData.longitude} onChange={handleChange} />
+            <input
+              type="number"
+              step="0.0001"
+              name="longitude"
+              placeholder="e.g., 79.6304"
+              value={formData.longitude}
+              onChange={handleChange}
+              disabled={loading}
+            />
           </div>
 
-          <button type="button" onClick={() => setShowMap(!showMap)} className="location-btn">
+          <button
+            type="button"
+            onClick={() => setShowMap(!showMap)}
+            className="location-btn"
+            disabled={loading}
+          >
             {showMap ? "Close Map" : "Select Location on Map"}
           </button>
-          
+
           {showMap && (
-            <div style={{ marginTop: "15px", borderRadius: "8px", overflow: "hidden" }}>
-              <div style={{ display: "flex", gap: "5px", marginBottom: "10px" }}>
+            <div className="map-wrapper">
+              <div className="map-search-container">
                 <input
                   type="text"
                   placeholder="Search city (e.g., Ongole, Hyderabad)"
                   value={searchInput}
                   onChange={(e) => setSearchInput(e.target.value)}
                   onKeyPress={(e) => e.key === "Enter" && searchLocation()}
-                  style={{
-                    flex: 1,
-                    padding: "10px",
-                    border: "1px solid #ccc",
-                    borderRadius: "4px",
-                    fontSize: "14px"
-                  }}
+                  className="map-search-input"
                 />
-                <button onClick={searchLocation} style={{
-                  padding: "10px 15px",
-                  backgroundColor: "#0A4D68",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "4px",
-                  cursor: "pointer",
-                  fontSize: "14px"
-                }}>Search</button>
+                <button onClick={searchLocation} className="map-search-btn">Search</button>
               </div>
-              <p style={{ fontSize: "12px", color: "#666", margin: "5px 0 10px 0" }}>
+              <p className="map-tip">
                 💡 Tip: Scroll to zoom, drag to pan, click on map to select location
               </p>
-              <div 
-                className="map-container"
-                style={{ 
-                borderRadius: "8px", 
-                overflow: "auto",
-                overflowX: "auto",
-                overflowY: "auto",
-                height: "500px", 
-                position: "relative",
-                border: "2px solid #ddd"
-              }}>
-                <MapContainer 
-                  center={mapCenter} 
-                  zoom={13} 
-                  scrollWheelZoom={true} 
+              <div className="map-container">
+                <MapContainer
+                  center={mapCenter}
+                  zoom={13}
+                  scrollWheelZoom={true}
                   dragging={true}
                   touchZoom={true}
                   doubleClickZoom={true}
                   boxZoom={true}
                   keyboard={true}
-                  style={{ 
-                    height: "100%", 
-                    width: "100%", 
-                    cursor: "crosshair",
-                    minHeight: "500px"
+                  style={{
+                    height: "100%",
+                    width: "100%"
                   }}
                 >
                   <TileLayer
@@ -397,19 +486,7 @@ export default function RegisterCustomer() {
                   <MapClickHandler onLocationSelect={handleLocationSelect} />
                   <MapZoomController />
                 </MapContainer>
-                <div style={{
-                  position: "absolute",
-                  bottom: "15px",
-                  left: "50%",
-                  transform: "translateX(-50%)",
-                  backgroundColor: "#0A4D68",
-                  color: "white",
-                  padding: "8px 15px",
-                  borderRadius: "20px",
-                  fontSize: "12px",
-                  zIndex: 999,
-                  textAlign: "center"
-                }}>
+                <div className="map-location-hint">
                   📍 Click on map to select location
                 </div>
               </div>
@@ -417,7 +494,13 @@ export default function RegisterCustomer() {
           )}
         </fieldset>
 
-        <button type="submit" className="submit-btn">REGISTER</button>
+        <button
+          type="submit"
+          className="submit-btn"
+          disabled={loading}
+        >
+          {loading ? "REGISTERING..." : "REGISTER"}
+        </button>
       </form>
     </div>
   );

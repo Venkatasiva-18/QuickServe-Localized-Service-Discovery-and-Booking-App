@@ -39,6 +39,7 @@ export default function LoginAdmin() {
         localStorage.setItem("role", "admin");
         localStorage.setItem("adminId", data.id);
         localStorage.setItem("adminName", data.name);
+        localStorage.setItem("adminEmail", data.email || form.email); // ⭐ For WebSocket notifications
 
         alert("Admin Login Successful!");
         navigate("/admin-dashboard");
