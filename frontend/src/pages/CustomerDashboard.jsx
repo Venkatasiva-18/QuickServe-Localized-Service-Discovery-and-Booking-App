@@ -57,9 +57,9 @@ export default function CustomerDashboard() {
 
         <div className="action-card">
           <FaMapMarkerAlt className="action-icon" />
-          <h4>Track Location</h4>
-          <p>Detect or change your saved location</p>
-          <button onClick={() => navigate("/location")}>Track</button>
+          <h4>Track Provider</h4>
+          <p>Track your active service provider's location</p>
+          <button onClick={() => navigate("/customer-bookings")}>View Bookings</button>
         </div>
 
         <div className="action-card">

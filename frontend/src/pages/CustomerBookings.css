@@ -230,6 +230,36 @@
   transform: translateY(-2px);
 }
 
+.track-btn {
+  margin-top: auto;
+  padding: 11px 18px;
+  background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  text-transform: capitalize;
+  letter-spacing: 0.2px;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+}
+
+.track-btn:hover {
+  background: linear-gradient(135deg, #2563eb 0%, #0891b2 100%);
+  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.35);
+  transform: translateY(-2px);
+}
+
+.track-btn:active {
+  transform: translateY(0);
+}
+
 .rating-form {
   background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
   padding: 18px;

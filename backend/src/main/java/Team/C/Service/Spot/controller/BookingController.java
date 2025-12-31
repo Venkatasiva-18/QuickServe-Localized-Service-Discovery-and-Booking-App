@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -296,5 +297,62 @@ public class BookingController {
             return ResponseEntity.ok("Booking deleted successfully");
         }
         return ResponseEntity.notFound().build();
+    }
+    
+    @PutMapping("/{id}/update-location")
+    public ResponseEntity<?> updateProviderLocation(@PathVariable Long id, @RequestBody Map<String, Double> location) {
+        try {
+            Optional<Booking> existingBooking = bookingService.getBookingById(id);
+            if (!existingBooking.isPresent()) {
+                return ResponseEntity.notFound().build();
+            }
+            
+            Booking booking = existingBooking.get();
+            
+            if (!location.containsKey("latitude") || !location.containsKey("longitude")) {
+                return ResponseEntity.badRequest().body("Latitude and longitude are required");
+            }
+            
+            booking.setProviderLatitude(location.get("latitude"));
+            booking.setProviderLongitude(location.get("longitude"));
+            booking.setLastLocationUpdate(LocalDateTime.now());
+            
+            Booking updated = bookingService.updateBookingDirect(booking);
+            return ResponseEntity.ok(convertToDTO(updated));
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Failed to update location: " + e.getMessage());
+            return ResponseEntity.badRequest().body(error);
+        }
+    }
+    
+    @GetMapping("/{id}/location")
+    public ResponseEntity<?> getProviderLocation(@PathVariable Long id) {
+        try {
+            Optional<Booking> booking = bookingService.getBookingById(id);
+            if (!booking.isPresent()) {
+                return ResponseEntity.notFound().build();
+            }
+            
+            Booking b = booking.get();
+            Map<String, Object> location = new HashMap<>();
+            location.put("bookingId", b.getId());
+            location.put("latitude", b.getProviderLatitude());
+            location.put("longitude", b.getProviderLongitude());
+            location.put("lastUpdate", b.getLastLocationUpdate());
+            location.put("status", b.getStatus());
+            
+            if (b.getProvider() != null) {
+                location.put("providerId", b.getProvider().getId());
+                location.put("providerName", b.getProvider().getName());
+                location.put("providerPhone", b.getProvider().getPhone());
+            }
+            
+            return ResponseEntity.ok(location);
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Failed to get location: " + e.getMessage());
+            return ResponseEntity.badRequest().body(error);
+        }
     }
 }

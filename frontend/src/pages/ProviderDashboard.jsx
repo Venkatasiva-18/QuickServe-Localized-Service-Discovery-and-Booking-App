@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import "./ProviderDashboard.css";
 import "./ProviderProfile.css";
 import { useNavigate } from "react-router-dom";
-import { FaPlus, FaEdit, FaTrash, FaStar, FaSignOutAlt, FaCalendarAlt, FaClock, FaUserTie, FaUserCircle } from "react-icons/fa";
+import { FaPlus, FaEdit, FaTrash, FaStar, FaSignOutAlt, FaCalendarAlt, FaClock, FaUserTie, FaUserCircle, FaMapMarkerAlt, FaCheckCircle } from "react-icons/fa";
 import axios from "axios";
 
 export default function ProviderDashboard() {
@@ -377,6 +377,16 @@ export default function ProviderDashboard() {
                       onClick={() => handleRejectBooking(booking.id)}
                     >
                       Reject
+                    </button>
+                  </div>
+                )}
+                {(booking.status === "Accepted" || booking.status === "In Progress") && (
+                  <div className="booking-actions">
+                    <button 
+                      className="share-location-mini-btn"
+                      onClick={() => navigate(`/provider-active-booking/${booking.id}`)}
+                    >
+                      <FaMapMarkerAlt /> Share Location
                     </button>
                   </div>
                 )}

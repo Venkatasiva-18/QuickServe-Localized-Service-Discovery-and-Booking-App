@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import "./ProviderBookings.css";
-import { FaClock, FaCalendarAlt, FaUserTie, FaCheckCircle, FaTimesCircle, FaUserCircle } from "react-icons/fa";
+import { FaClock, FaCalendarAlt, FaUserTie, FaCheckCircle, FaTimesCircle, FaUserCircle, FaMapMarkerAlt } from "react-icons/fa";
 
 export default function ProviderBookings() {
-
+  const navigate = useNavigate();
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -151,12 +152,36 @@ export default function ProviderBookings() {
                     </>
                   )}
                   {booking.status === "Accepted" && (
-                    <button 
-                      className="complete-btn" 
-                      onClick={() => completeBooking(booking.id)}
-                    >
-                      <FaCheckCircle /> Mark Complete
-                    </button>
+                    <>
+                      <button 
+                        className="share-location-btn" 
+                        onClick={() => navigate(`/provider-active-booking/${booking.id}`)}
+                      >
+                        <FaMapMarkerAlt /> Share Location
+                      </button>
+                      <button 
+                        className="complete-btn" 
+                        onClick={() => completeBooking(booking.id)}
+                      >
+                        <FaCheckCircle /> Mark Complete
+                      </button>
+                    </>
+                  )}
+                  {booking.status === "In Progress" && (
+                    <>
+                      <button 
+                        className="share-location-btn" 
+                        onClick={() => navigate(`/provider-active-booking/${booking.id}`)}
+                      >
+                        <FaMapMarkerAlt /> Update Location
+                      </button>
+                      <button 
+                        className="complete-btn" 
+                        onClick={() => completeBooking(booking.id)}
+                      >
+                        <FaCheckCircle /> Mark Complete
+                      </button>
+                    </>
                   )}
                 </div>
               </div>

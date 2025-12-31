@@ -73,4 +73,13 @@ public class Booking {
     
     @Column(nullable = true)
     private LocalDateTime cancelledAt;
+    
+    @Column(nullable = true)
+    private Double providerLatitude;
+    
+    @Column(nullable = true)
+    private Double providerLongitude;
+    
+    @Column(nullable = true)
+    private LocalDateTime lastLocationUpdate;
 }

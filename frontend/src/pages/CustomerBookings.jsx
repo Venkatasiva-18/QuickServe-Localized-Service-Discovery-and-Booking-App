@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import "./CustomerBookings.css";
-import { FaClock, FaCalendarAlt, FaUserTie, FaTimesCircle, FaStar } from "react-icons/fa";
+import { FaClock, FaCalendarAlt, FaUserTie, FaTimesCircle, FaStar, FaMapMarkerAlt } from "react-icons/fa";
 
 export default function CustomerBookings() {
-
+  const navigate = useNavigate();
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -139,6 +140,15 @@ export default function CustomerBookings() {
               <p><FaCalendarAlt /> Date: {b.date}</p>
               <p><FaClock /> Time: {b.time}</p>
               {b.totalAmount && <p>💰 Amount: ₹{b.totalAmount}</p>}
+
+              {(b.status === "Accepted" || b.status === "In Progress") && (
+                <button 
+                  className="track-btn" 
+                  onClick={() => navigate(`/track-provider/${b.id}`)}
+                >
+                  <FaMapMarkerAlt /> Track Provider Location
+                </button>
+              )}
 
               {b.status === "Pending" && (
                 <button 

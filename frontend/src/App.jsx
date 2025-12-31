@@ -30,6 +30,7 @@ import ProviderProfile from "./pages/ProviderProfile";
 import ProviderUpdate from "./pages/ProviderUpdate";
 import ProviderDashboard from "./pages/ProviderDashboard";
 import ProviderBookings from "./pages/ProviderBookings";
+import ProviderActiveBooking from "./pages/ProviderActiveBooking";
 
 // Admin
 import AdminDashboard from "./pages/AdminDashboard";
@@ -41,6 +42,7 @@ import AdminContacts from "./pages/AdminContacts";
 import SearchResults from "./pages/SearchResults";
 import NearbyServices from "./pages/NearbyServices";
 import Contact from "./pages/Contact";
+import TrackProvider from "./pages/TrackProvider";
 
 export default function App() {
   return (
@@ -75,6 +77,7 @@ export default function App() {
         <Route path="/provider-update" element={<ProviderUpdate />} />
         <Route path="/provider-dashboard" element={<ProviderDashboard />} />
         <Route path="/provider-bookings" element={<ProviderBookings />} />
+        <Route path="/provider-active-booking/:bookingId" element={<ProviderActiveBooking />} />
 
         {/* Admin */}
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
@@ -87,6 +90,9 @@ export default function App() {
         <Route path="/nearby-services" element={<NearbyServices />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/contact-help" element={<Contact />} />
+        
+        {/* Tracking */}
+        <Route path="/track-provider/:bookingId" element={<TrackProvider />} />
 
       </Routes>
 
