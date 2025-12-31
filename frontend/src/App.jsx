@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
+import { NotificationProvider } from "./context/NotificationContext";
 
 // Pages
 import Home from "./pages/Home";
@@ -42,13 +43,16 @@ import SearchResults from "./pages/SearchResults";
 import NearbyServices from "./pages/NearbyServices";
 import Contact from "./pages/Contact";
 
+import OTPVerification from "./pages/OTPVerification";
+import ForgotPassword from "./pages/ForgotPassword";
+
 export default function App() {
   return (
     <BrowserRouter>
+      <NotificationProvider>
+        <Navbar />   {/* ⭐ NAVBAR ALWAYS VISIBLE */}
 
-      <Navbar />   {/* ⭐ NAVBAR ALWAYS VISIBLE */}
-
-      <Routes>
+        <Routes>
 
         <Route path="/" element={<Home />} />
 
@@ -88,9 +92,20 @@ export default function App() {
         <Route path="/contact" element={<Contact />} />
         <Route path="/contact-help" element={<Contact />} />
 
+
+        <Route path="/login" element={<Login />} />
+        <Route path="/login-customer" element={<LoginCustomer />} />
+        <Route path="/login-provider" element={<LoginProvider />} />
+        <Route path="/login-admin" element={<LoginAdmin />} />
+        
+        {/* ⭐ NEW: OTP Verification & Password Reset */}
+        <Route path="/verify-email" element={<OTPVerification />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+
       </Routes>
 
       <Footer />
+      </NotificationProvider>
     </BrowserRouter>
   );
 }

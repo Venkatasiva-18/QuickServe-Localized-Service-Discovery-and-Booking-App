@@ -1,0 +1,110 @@
+# 🚀 QUICK START - Notification System Fix
+
+## ✅ What Was Fixed
+- WebSocket user principal authentication
+- Real-time notification delivery
+- White screen issue (global polyfill)
+- Admin login routing
+
+---
+
+## 🎯 RESTART NOW (Required!)
+
+### Option A: Use Script
+```
+Double-click: RESTART_WITH_FIX.bat
+```
+
+### Option B: Manual
+```bash
+# Terminal 1
+cd backend
+./mvnw spring-boot:run
+
+# Terminal 2
+cd frontend
+npm run dev
+```
+
+**BOTH must be restarted!**
+
+---
+
+## 🧪 Test in 3 Steps
+
+1. **Login as Customer**
+   - URL: http://localhost:5173/login-customer
+   - Check console: "WebSocket Connected" ✅
+
+2. **Book a Service**
+   - Go to any service
+   - Click "Book Now"
+   - Fill details and submit
+
+3. **Login as Provider (different browser)**
+   - Should see: 🔔 (1)
+   - Click bell → See notification!
+
+---
+
+## 🔐 Admin Login
+
+- **URL:** http://localhost:5173/login-admin
+- **Email:** admin@servicespot.com
+- **Password:** admin123
+
+---
+
+## ✅ Success Indicators
+
+### Frontend Console (F12):
+```
+✅ Connecting to WebSocket for user: [email]
+✅ WebSocket Connected for user: [email]
+✅ Subscribed to: /user/[email]/queue/notifications
+✅ Received notification: {title: "...", ...}
+```
+
+### Backend Console:
+```
+✅ WebSocket connection established - Session ID: [id]
+✅ Notification created and sent to [email]: [title]
+✅ Real-time notification sent successfully to user: [email]
+```
+
+---
+
+## ❌ If Not Working
+
+1. ✅ Restart backend?
+2. ✅ Restart frontend?
+3. ✅ Clear browser cache? (Ctrl+Shift+Delete)
+4. ✅ Check console for errors?
+
+**See:** NOTIFICATION_FIX_APPLIED.md for full troubleshooting
+
+---
+
+## 📊 Notification Types Working
+
+✅ `BOOKING_CREATED` - Customer books → Provider notified
+✅ `BOOKING_CONFIRMED` - Provider confirms → Customer notified
+✅ `BOOKING_CANCELLED` - Either cancels → Other notified
+✅ `BOOKING_COMPLETED` - Service done → Customer notified
+✅ `REVIEW_RECEIVED` - Review posted → Provider notified
+
+---
+
+## 📝 Files Changed
+
+- ✅ `WebSocketConfig.java` - User principal
+- ✅ `NotificationContext.jsx` - Connection URL
+- ✅ `NotificationService.java` - Better logging
+- ✅ `vite.config.js` - Global polyfill
+
+---
+
+**Status:** ✅ FIXED - Just restart and test!
+
+**Full Docs:** NOTIFICATION_FIX_APPLIED.md
+

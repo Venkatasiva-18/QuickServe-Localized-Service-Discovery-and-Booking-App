@@ -2,7 +2,9 @@ package Team.C.Service.Spot.controller;
 
 import Team.C.Service.Spot.model.Review;
 import Team.C.Service.Spot.services.ReviewService;
+import Team.C.Service.Spot.services.NotificationService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,10 +15,12 @@ import java.util.List;
 @RequestMapping("/api/reviews")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "http://localhost:5173")
+@Slf4j
 public class ReviewController {
     
     private final ReviewService reviewService;
-    
+    private final NotificationService notificationService;
+
     @GetMapping
     public ResponseEntity<List<Review>> getAllReviews() {
         return ResponseEntity.ok(reviewService.getAllReviews());
@@ -51,7 +55,38 @@ public class ReviewController {
     
     @PostMapping
     public ResponseEntity<Review> createReview(@RequestBody Review review) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(reviewService.createReview(review));
+        try {
+            // Create the review
+            Review createdReview = reviewService.createReview(review);
+
+            // Send notification to provider
+            if (createdReview != null &&
+                createdReview.getService() != null &&
+                createdReview.getService().getProvider() != null &&
+                createdReview.getCustomer() != null) {
+
+                String providerEmail = createdReview.getService().getProvider().getEmail();
+                String customerName = createdReview.getCustomer().getName();
+                int rating = createdReview.getRating();
+                String serviceName = createdReview.getService().getName();
+
+                log.info("Sending review notification to provider: {}", providerEmail);
+
+                // Send notification to provider
+                notificationService.notifyReviewReceived(
+                    providerEmail,
+                    customerName,
+                    createdReview.getId(),
+                    rating,
+                    serviceName
+                );
+            }
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(createdReview);
+        } catch (Exception e) {
+            log.error("Error creating review: {}", e.getMessage(), e);
+            throw e;
+        }
     }
     
     @PutMapping("/{id}")

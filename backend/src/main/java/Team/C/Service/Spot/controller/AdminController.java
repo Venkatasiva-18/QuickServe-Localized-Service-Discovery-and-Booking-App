@@ -186,7 +186,7 @@ public class AdminController {
         try {
             List<Provider> allProviders = adminService.getAllProviders();
             long verifiedProviders = allProviders.stream()
-                    .filter(p -> p.isVerified())
+                    .filter(p -> p.getVerified())
                     .count();
             
             List<Customer> allCustomers = adminService.getAllCustomers();

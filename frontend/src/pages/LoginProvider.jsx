@@ -34,6 +34,7 @@ export default function LoginProvider() {
       localStorage.setItem("role", "provider");
       localStorage.setItem("providerName", response.data.name);
       localStorage.setItem("providerId", response.data.id);
+      localStorage.setItem("providerEmail", response.data.email || form.email); // ⭐ For WebSocket notifications
 
       alert("Provider Login Successful!");
       navigate("/provider-profile");

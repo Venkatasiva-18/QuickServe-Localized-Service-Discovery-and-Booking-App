@@ -388,46 +388,22 @@ export default function ProviderUpdate() {
           </button>
           
           {showMap && (
-            <div style={{ marginTop: "15px", borderRadius: "8px", overflow: "hidden" }}>
-              <div style={{ display: "flex", gap: "5px", marginBottom: "10px" }}>
+            <div className="map-wrapper">
+              <div className="map-search-container">
                 <input
                   type="text"
                   placeholder="Search city (e.g., Ongole, Hyderabad)"
                   value={searchInput}
                   onChange={(e) => setSearchInput(e.target.value)}
                   onKeyPress={(e) => e.key === "Enter" && searchLocation()}
-                  style={{
-                    flex: 1,
-                    padding: "10px",
-                    border: "1px solid #ccc",
-                    borderRadius: "4px",
-                    fontSize: "14px"
-                  }}
+                  className="map-search-input"
                 />
-                <button type="button" onClick={searchLocation} style={{
-                  padding: "10px 15px",
-                  backgroundColor: "#0A4D68",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "4px",
-                  cursor: "pointer",
-                  fontSize: "14px"
-                }}>Search</button>
+                <button type="button" onClick={searchLocation} className="map-search-btn">Search</button>
               </div>
-              <p style={{ fontSize: "12px", color: "#666", margin: "5px 0 10px 0" }}>
+              <p className="map-tip">
                 💡 Tip: Scroll to zoom, drag to pan, click on map to select location
               </p>
-              <div 
-                className="map-container"
-                style={{ 
-                borderRadius: "8px", 
-                overflow: "auto",
-                overflowX: "auto",
-                overflowY: "auto",
-                height: "500px", 
-                position: "relative",
-                border: "2px solid #ddd"
-              }}>
+              <div className="map-container">
                 <MapContainer 
                   center={mapCenter} 
                   zoom={13} 
@@ -439,9 +415,7 @@ export default function ProviderUpdate() {
                   keyboard={true}
                   style={{ 
                     height: "100%", 
-                    width: "100%", 
-                    cursor: "crosshair",
-                    minHeight: "500px"
+                    width: "100%"
                   }}
                 >
                   <TileLayer
@@ -454,19 +428,7 @@ export default function ProviderUpdate() {
                   <MapClickHandler onLocationSelect={handleLocationSelect} />
                   <MapZoomController />
                 </MapContainer>
-                <div style={{
-                  position: "absolute",
-                  bottom: "15px",
-                  left: "50%",
-                  transform: "translateX(-50%)",
-                  backgroundColor: "#0A4D68",
-                  color: "white",
-                  padding: "8px 15px",
-                  borderRadius: "20px",
-                  fontSize: "12px",
-                  zIndex: 999,
-                  textAlign: "center"
-                }}>
+                <div className="map-location-hint">
                   📍 Click on map to select location
                 </div>
               </div>
