@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -57,8 +58,8 @@ public class Booking {
     @Column(nullable = true)
     private String notes;
     
-    @Column(nullable = false, columnDefinition = "DECIMAL(10,2) DEFAULT 0.00")
-    private Double totalAmount = 0.0;
+    @Column(nullable = false, precision = 10, scale = 2)
+    private BigDecimal totalAmount = BigDecimal.ZERO;
     
     @CreationTimestamp
     @Column(nullable = false, updatable = false)

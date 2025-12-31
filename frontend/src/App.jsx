@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
+import { NotificationProvider } from "./context/NotificationContext";
 
 // Pages
 import Home from "./pages/Home";
@@ -44,59 +45,73 @@ import NearbyServices from "./pages/NearbyServices";
 import Contact from "./pages/Contact";
 import TrackProvider from "./pages/TrackProvider";
 
+import OTPVerification from "./pages/OTPVerification";
+import ForgotPassword from "./pages/ForgotPassword";
+import Notifications from "./pages/Notifications";
+
 export default function App() {
   return (
     <BrowserRouter>
+      <NotificationProvider>
+        <Navbar />   {/* ⭐ NAVBAR ALWAYS VISIBLE */}
 
-      <Navbar />   {/* ⭐ NAVBAR ALWAYS VISIBLE */}
+        <Routes>
 
-      <Routes>
+          <Route path="/" element={<Home />} />
 
-        <Route path="/" element={<Home />} />
+          {/* Register */}
+          <Route path="/register" element={<Register />} />
+          <Route path="/register-customer" element={<RegisterCustomer />} />
+          <Route path="/register-provider" element={<RegisterProvider />} />
 
-        {/* Register */}
-        <Route path="/register" element={<Register />} />
-        <Route path="/register-customer" element={<RegisterCustomer />} />
-        <Route path="/register-provider" element={<RegisterProvider />} />
+          {/* Login */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/login-customer" element={<LoginCustomer />} />
+          <Route path="/login-provider" element={<LoginProvider />} />
+          <Route path="/login-admin" element={<LoginAdmin />} />
 
-        {/* Login */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/login-customer" element={<LoginCustomer />} />
-        <Route path="/login-provider" element={<LoginProvider />} />
-        <Route path="/login-admin" element={<LoginAdmin />} />
+          {/* Customer */}
+          <Route path="/customer-dashboard" element={<CustomerDashboard />} />
+          <Route path="/customer-profile" element={<CustomerProfile />} />
+          <Route path="/customer-update" element={<CustomerUpdate />} />
+          <Route path="/customer-bookings" element={<CustomerBookings />} />
+          <Route path="/book-service" element={<BookService />} />
 
-        {/* Customer */}
-        <Route path="/customer-dashboard" element={<CustomerDashboard />} />
-        <Route path="/customer-profile" element={<CustomerProfile />} />
-        <Route path="/customer-update" element={<CustomerUpdate />} />
-        <Route path="/customer-bookings" element={<CustomerBookings />} />
-        <Route path="/book-service" element={<BookService />} />
+          {/* Provider */}
+          <Route path="/provider-profile" element={<ProviderProfile />} />
+          <Route path="/provider-update" element={<ProviderUpdate />} />
+          <Route path="/provider-dashboard" element={<ProviderDashboard />} />
+          <Route path="/provider-bookings" element={<ProviderBookings />} />
 
-        {/* Provider */}
-        <Route path="/provider-profile" element={<ProviderProfile />} />
-        <Route path="/provider-update" element={<ProviderUpdate />} />
-        <Route path="/provider-dashboard" element={<ProviderDashboard />} />
-        <Route path="/provider-bookings" element={<ProviderBookings />} />
-        <Route path="/provider-active-booking/:bookingId" element={<ProviderActiveBooking />} />
+          {/* Admin */}
+          <Route path="/admin-dashboard" element={<AdminDashboard />} />
+          <Route path="/admin-customers" element={<AdminCustomers />} />
+          <Route path="/admin-providers" element={<AdminProviders />} />
+          <Route path="/admin-contacts" element={<AdminContacts />} />
 
-        {/* Admin */}
-        <Route path="/admin-dashboard" element={<AdminDashboard />} />
-        <Route path="/admin-customers" element={<AdminCustomers />} />
-        <Route path="/admin-providers" element={<AdminProviders />} />
-        <Route path="/admin-contacts" element={<AdminContacts />} />
+          {/* Contact & Search */}
+          <Route path="/search" element={<SearchResults />} />
+          <Route path="/nearby-services" element={<NearbyServices />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/contact-help" element={<Contact />} />
 
-        {/* Contact & Search */}
-        <Route path="/search" element={<SearchResults />} />
-        <Route path="/nearby-services" element={<NearbyServices />} />
-        <Route path="/contact" element={<Contact />} />
-        <Route path="/contact-help" element={<Contact />} />
-        
-        {/* Tracking */}
-        <Route path="/track-provider/:bookingId" element={<TrackProvider />} />
 
-      </Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/login-customer" element={<LoginCustomer />} />
+          <Route path="/login-provider" element={<LoginProvider />} />
+          <Route path="/login-admin" element={<LoginAdmin />} />
 
-      <Footer />
+          {/* ⭐ NEW: OTP Verification & Password Reset */}
+          <Route path="/verify-email" element={<OTPVerification />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+
+          {/* ⭐ Notifications */}
+          <Route path="/notifications" element={<Notifications />} />
+
+        </Routes>
+
+        <Footer />
+      </NotificationProvider>
     </BrowserRouter>
   );
 }

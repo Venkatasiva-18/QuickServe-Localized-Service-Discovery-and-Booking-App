@@ -1,29 +1,39 @@
 package Team.C.Service.Spot.controller;
 
-import Team.C.Service.Spot.dto.BookingDTO;
-import Team.C.Service.Spot.model.Booking;
-import Team.C.Service.Spot.model.Customer;
-import Team.C.Service.Spot.model.Provider;
-import Team.C.Service.Spot.model.Service;
-import Team.C.Service.Spot.services.BookingService;
-import Team.C.Service.Spot.repositery.CustomerRepo;
-import Team.C.Service.Spot.repositery.ProviderRepo;
-import Team.C.Service.Spot.repositery.ServiceRepo;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import Team.C.Service.Spot.dto.BookingDTO;
+import Team.C.Service.Spot.model.Booking;
+import Team.C.Service.Spot.model.Customer;
+import Team.C.Service.Spot.model.Provider;
+import Team.C.Service.Spot.model.Service;
+import Team.C.Service.Spot.repositery.CustomerRepo;
+import Team.C.Service.Spot.repositery.ProviderRepo;
+import Team.C.Service.Spot.repositery.ServiceRepo;
+import Team.C.Service.Spot.services.BookingService;
+import Team.C.Service.Spot.services.NotificationService;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/booking")
@@ -32,6 +42,7 @@ import java.util.stream.Collectors;
 public class BookingController {
     
     private final BookingService bookingService;
+    private final NotificationService notificationService;
     private final CustomerRepo customerRepo;
     private final ProviderRepo providerRepo;
     private final ServiceRepo serviceRepo;
@@ -152,9 +163,9 @@ public class BookingController {
                 return ResponseEntity.badRequest().body("Invalid time format. Use HH:MM or HH:MM:SS");
             }
             
-            Double totalAmount = bookingDTO.getTotalAmount();
-            if (totalAmount == null || totalAmount <= 0) {
-                totalAmount = service.get().getPrice() != null ? service.get().getPrice() : 0.0;
+            BigDecimal totalAmount = bookingDTO.getTotalAmount();
+            if (totalAmount == null || totalAmount.compareTo(BigDecimal.ZERO) <= 0) {
+                totalAmount = service.get().getPrice() != null ? BigDecimal.valueOf(service.get().getPrice()) : BigDecimal.ZERO;
             }
             
             Booking booking = Booking.builder()
@@ -171,6 +182,31 @@ public class BookingController {
                     .build();
             
             Booking created = bookingService.createBooking(booking);
+
+            // Send notification to provider about new booking
+            String customerName = customer.isPresent() ? customer.get().getName() :
+                                 (providerBooker.isPresent() ? providerBooker.get().getName() : "Unknown");
+            notificationService.notifyBookingCreated(
+                provider.get().getEmail(),
+                customerName,
+                created.getId(),
+                service.get().getName()
+            );
+
+            // Send confirmation notification to customer/provider who made the booking
+            String recipientEmail = customer.isPresent() ? customer.get().getEmail() : 
+                                   (providerBooker.isPresent() ? providerBooker.get().getEmail() : null);
+            if (recipientEmail != null) {
+                notificationService.notifyCustomerBookingConfirmed(
+                    recipientEmail,
+                    provider.get().getName(),
+                    created.getId(),
+                    service.get().getName(),
+                    bookingDate,
+                    bookingTime
+                );
+            }
+
             return ResponseEntity.status(HttpStatus.CREATED).body(convertToDTO(created));
         } catch (Exception e) {
             Map<String, String> error = new HashMap<>();
@@ -250,9 +286,44 @@ public class BookingController {
             }
             
             Booking booking = existingBooking.get();
-            
+            String oldStatus = booking.getStatus();
+
             if (updates.containsKey("status")) {
-                booking.setStatus((String) updates.get("status"));
+                String newStatus = (String) updates.get("status");
+                booking.setStatus(newStatus);
+
+                // Send notification when status changes to Accepted
+                if ("Accepted".equalsIgnoreCase(newStatus) && !newStatus.equals(oldStatus)) {
+                    String customerEmail = null;
+                    if (booking.getCustomer() != null) {
+                        customerEmail = booking.getCustomer().getEmail();
+                    } else if (booking.getProviderBooker() != null) {
+                        customerEmail = booking.getProviderBooker().getEmail();
+                    }
+                    
+                    if (customerEmail != null) {
+                        notificationService.notifyBookingAccepted(
+                            customerEmail,
+                            booking.getProvider().getName(),
+                            booking.getId(),
+                            booking.getServiceName(),
+                            booking.getBookingDate(),
+                            booking.getBookingTime()
+                        );
+                    }
+                }
+                
+                // Send notification when status changes to Confirmed (if using different flow)
+                if ("Confirmed".equalsIgnoreCase(newStatus) && !newStatus.equals(oldStatus)) {
+                    if (booking.getCustomer() != null) {
+                        notificationService.notifyBookingConfirmed(
+                            booking.getCustomer().getEmail(),
+                            booking.getProvider().getName(),
+                            booking.getId(),
+                            booking.getServiceName()
+                        );
+                    }
+                }
             }
             if (updates.containsKey("notes")) {
                 booking.setNotes((String) updates.get("notes"));
@@ -275,8 +346,36 @@ public class BookingController {
     
     @PutMapping("/cancel/{id}")
     public ResponseEntity<?> cancelBooking(@PathVariable Long id) {
+        Optional<Booking> existingBooking = bookingService.getBookingById(id);
+        if (!existingBooking.isPresent()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Booking booking = existingBooking.get();
         Booking cancelled = bookingService.cancelBooking(id);
+
         if (cancelled != null) {
+            // Notify the other party about cancellation
+            if (booking.getCustomer() != null) {
+                // Notify provider about customer cancellation
+                notificationService.notifyBookingCancelled(
+                    booking.getProvider().getEmail(),
+                    "SERVICE_PROVIDER",
+                    booking.getCustomer().getName(),
+                    booking.getId(),
+                    booking.getServiceName()
+                );
+            } else if (booking.getProvider() != null && booking.getCustomer() != null) {
+                // Notify customer about provider cancellation
+                notificationService.notifyBookingCancelled(
+                    booking.getCustomer().getEmail(),
+                    "CUSTOMER",
+                    booking.getProvider().getName(),
+                    booking.getId(),
+                    booking.getServiceName()
+                );
+            }
+
             return ResponseEntity.ok(convertToDTO(cancelled));
         }
         return ResponseEntity.notFound().build();
@@ -284,8 +383,25 @@ public class BookingController {
     
     @PutMapping("/complete/{id}")
     public ResponseEntity<?> completeBooking(@PathVariable Long id) {
+        Optional<Booking> existingBooking = bookingService.getBookingById(id);
+        if (!existingBooking.isPresent()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Booking booking = existingBooking.get();
         Booking completed = bookingService.completeBooking(id);
+
         if (completed != null) {
+            // Notify customer about service completion
+            if (booking.getCustomer() != null) {
+                notificationService.notifyBookingCompleted(
+                    booking.getCustomer().getEmail(),
+                    booking.getProvider().getName(),
+                    booking.getId(),
+                    booking.getServiceName()
+                );
+            }
+
             return ResponseEntity.ok(convertToDTO(completed));
         }
         return ResponseEntity.notFound().build();

@@ -1,5 +1,6 @@
 package Team.C.Service.Spot.services;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import Team.C.Service.Spot.model.Customer;
 import Team.C.Service.Spot.repositery.CustomerRepo;
@@ -12,15 +13,34 @@ import java.util.Optional;
 public class CustomerService {
 
     private final CustomerRepo customerRepo;
+    private final PasswordEncoder passwordEncoder;
 
     public Customer signup(Customer customer) {
+        if (customer.getPassword() != null && !customer.getPassword().startsWith("$2a$")) {
+            customer.setPassword(passwordEncoder.encode(customer.getPassword()));
+        }
         return customerRepo.save(customer);
     }
 
-    public Boolean login(String email, String password) {
-        return customerRepo.findByEmail(email)
-                .map(c -> c.getPassword().equals(password))
-                .orElse(false);
+    private boolean checkPassword(String rawPassword, String storedPassword) {
+        if (storedPassword == null || storedPassword.isEmpty()) return false;
+        if (storedPassword.startsWith("$2a$")) {
+            return passwordEncoder.matches(rawPassword, storedPassword);
+        }
+        return rawPassword.equals(storedPassword);
+    }
+
+    public Optional<Customer> login(String email, String password) {
+        Optional<Customer> customer = customerRepo.findByEmail(email);
+        if (customer.isPresent() && checkPassword(password, customer.get().getPassword())) {
+            Customer c = customer.get();
+            if (!c.getPassword().startsWith("$2a$")) {
+                c.setPassword(passwordEncoder.encode(password));
+                customerRepo.save(c);
+            }
+            return Optional.of(c);
+        }
+        return Optional.empty();
     }
 
     public List<Customer> getAllCustomers() {
@@ -45,7 +65,12 @@ public class CustomerService {
                         existing.setEmail(updatedCustomer.getEmail());
                     }
                     if (updatedCustomer.getPassword() != null) {
-                        existing.setPassword(updatedCustomer.getPassword());
+                        String password = updatedCustomer.getPassword();
+                        if (password != null && !password.startsWith("$2a$")) {
+                            existing.setPassword(passwordEncoder.encode(password));
+                        } else {
+                            existing.setPassword(password);
+                        }
                     }
                     if (updatedCustomer.getPhone() != null) {
                         existing.setPhone(updatedCustomer.getPhone());
@@ -88,7 +113,11 @@ public class CustomerService {
     public Customer updatePassword(Long id, String newPassword) {
         return customerRepo.findById(id)
                 .map(c -> {
-                    c.setPassword(newPassword);
+                    if (newPassword != null && !newPassword.startsWith("$2a$")) {
+                        c.setPassword(passwordEncoder.encode(newPassword));
+                    } else {
+                        c.setPassword(newPassword);
+                    }
                     return customerRepo.save(c);
                 })
                 .orElse(null);

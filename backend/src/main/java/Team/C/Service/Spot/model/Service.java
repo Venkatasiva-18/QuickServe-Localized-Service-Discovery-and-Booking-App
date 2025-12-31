@@ -45,20 +45,20 @@ public class Service {
     @Column(nullable = false)
     private Integer pincode;
     
-    @Column(columnDefinition = "DOUBLE DEFAULT 0")
+    @Column
     private Double rating = 0.0;
     
-    @Column(columnDefinition = "INT DEFAULT 0")
+    @Column
     private Integer reviewCount = 0;
     
     @Column(columnDefinition = "BOOLEAN DEFAULT true")
     private Boolean isActive = true;
     
-    @Column(name = "created_at", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    @Column(name = "created_at")
     @Temporal(TemporalType.TIMESTAMP)
     private Date createdAt = new Date();
     
-    @Column(name = "updated_at", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP")
+    @Column(name = "updated_at")
     @Temporal(TemporalType.TIMESTAMP)
     private Date updatedAt = new Date();
 }

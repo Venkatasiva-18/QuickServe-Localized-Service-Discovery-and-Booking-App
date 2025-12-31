@@ -3,6 +3,7 @@ package Team.C.Service.Spot.services;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
@@ -17,14 +18,34 @@ public class ProviderService {
 
     private final ProviderRepo providerRepo;
     private final ServiceRepo serviceRepo;
+    private final PasswordEncoder passwordEncoder;
 
     public Provider signup(Provider provider) {
+        if (provider.getPassword() != null && !provider.getPassword().startsWith("$2a$")) {
+            provider.setPassword(passwordEncoder.encode(provider.getPassword()));
+        }
         return providerRepo.save(provider);
     }
 
+    private boolean checkPassword(String rawPassword, String storedPassword) {
+        if (storedPassword == null || storedPassword.isEmpty()) return false;
+        if (storedPassword.startsWith("$2a$")) {
+            return passwordEncoder.matches(rawPassword, storedPassword);
+        }
+        return rawPassword.equals(storedPassword);
+    }
+
     public Optional<Provider> login(String email, String password) {
-        return providerRepo.findByEmail(email)
-                .filter(p -> p.getPassword().equals(password));
+        Optional<Provider> provider = providerRepo.findByEmail(email);
+        if (provider.isPresent() && checkPassword(password, provider.get().getPassword())) {
+            Provider p = provider.get();
+            if (!p.getPassword().startsWith("$2a$")) {
+                p.setPassword(passwordEncoder.encode(password));
+                providerRepo.save(p);
+            }
+            return Optional.of(p);
+        }
+        return Optional.empty();
     }
 
     public Optional<Provider> getProviderById(Long id) {
@@ -57,7 +78,12 @@ public class ProviderService {
                         provider.setEmail(updatedProvider.getEmail());
                     }
                     if (updatedProvider.getPassword() != null) {
-                        provider.setPassword(updatedProvider.getPassword());
+                        String password = updatedProvider.getPassword();
+                        if (password != null && !password.startsWith("$2a$")) {
+                            provider.setPassword(passwordEncoder.encode(password));
+                        } else {
+                            provider.setPassword(password);
+                        }
                     }
                     if (updatedProvider.getPhone() != null) {
                         provider.setPhone(updatedProvider.getPhone());
