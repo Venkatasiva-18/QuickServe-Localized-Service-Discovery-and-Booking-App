@@ -1,5 +1,7 @@
 package Team.C.Service.Spot.dto;
 
+import java.math.BigDecimal;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,6 +13,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class BookingDTO {
     private Long customerId;
+    private Long providerBookerId;
     private Long providerId;
     private Long serviceId;
     private String serviceName;
@@ -18,5 +21,5 @@ public class BookingDTO {
     private String bookingTime;
     private String notes;
     private String status;
-    private Double totalAmount;
+    private BigDecimal totalAmount;
 }

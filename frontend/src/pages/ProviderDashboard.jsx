@@ -12,6 +12,7 @@ export default function ProviderDashboard() {
   const [provider, setProvider] = useState(null);
   const [services, setServices] = useState([]);
   const [bookings, setBookings] = useState([]);
+  const [myBookings, setMyBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAddServiceForm, setShowAddServiceForm] = useState(false);
   const [categories, setCategories] = useState([]);
@@ -56,6 +57,11 @@ export default function ProviderDashboard() {
       );
       setBookings(Array.isArray(bookingsRes.data) ? bookingsRes.data.slice(0, 5) : []);
       
+      const myBookingsRes = await axios.get(
+        `http://localhost:8080/booking/provider-made/${providerId}`
+      );
+      setMyBookings(Array.isArray(myBookingsRes.data) ? myBookingsRes.data : []);
+
       setLoading(false);
     } catch (error) {
       console.error("Error fetching provider data:", error);
@@ -335,8 +341,8 @@ export default function ProviderDashboard() {
               <div key={booking.id} className="booking-preview-card">
                 <div className="customer-profile-header">
                   <div className="customer-avatar">
-                    {booking.customerProfileImage ? (
-                      <img src={booking.customerProfileImage} alt="Customer" className="customer-profile-img" onError={(e) => {
+                    {booking.customerProfileImage || booking.providerBookerProfileImage ? (
+                      <img src={booking.customerProfileImage || booking.providerBookerProfileImage} alt="Customer" className="customer-profile-img" onError={(e) => {
                         e.target.style.display = 'none';
                       }} />
                     ) : (
@@ -344,8 +350,8 @@ export default function ProviderDashboard() {
                     )}
                   </div>
                   <div className="customer-details">
-                    <p className="customer-name"><strong>{booking.customerName || "Customer"}</strong></p>
-                    {booking.customerPhone && <p className="customer-phone">📱 {booking.customerPhone}</p>}
+                    <p className="customer-name"><strong>{booking.customerName || booking.providerBookerName || "Customer"}</strong></p>
+                    {(booking.customerPhone || booking.providerBookerPhone) && <p className="customer-phone">📱 {booking.customerPhone || booking.providerBookerPhone}</p>}
                   </div>
                 </div>
                 <div className="booking-info">
@@ -380,6 +386,51 @@ export default function ProviderDashboard() {
         ) : (
           <div className="no-bookings-message">
             <p>No booking requests yet. Great services will attract customers!</p>
+          </div>
+        )}
+      </div>
+
+      {/* My Bookings Section (Bookings made by this provider) */}
+      <div className="booking-requests-section">
+        <div className="section-header">
+          <h2>My Bookings ({myBookings.length})</h2>
+        </div>
+
+        {myBookings.length > 0 ? (
+          <div className="bookings-preview">
+            {myBookings.map((booking) => (
+              <div key={booking.id} className="booking-preview-card">
+                <div className="customer-profile-header">
+                  <div className="customer-avatar">
+                    {booking.providerProfileImage ? (
+                      <img src={booking.providerProfileImage} alt="Provider" className="customer-profile-img" onError={(e) => {
+                        e.target.style.display = 'none';
+                      }} />
+                    ) : (
+                      <FaUserTie size={50} color="#0A4D68" />
+                    )}
+                  </div>
+                  <div className="customer-details">
+                    <p className="customer-name"><strong>Provider: {booking.providerName}</strong></p>
+                    {booking.providerPhone && <p className="customer-phone">📱 {booking.providerPhone}</p>}
+                  </div>
+                </div>
+                <div className="booking-info">
+                  <p className="service-name"><strong>{booking.serviceName}</strong></p>
+                  <p><FaCalendarAlt /> {booking.date}</p>
+                  <p><FaClock /> {booking.time}</p>
+                </div>
+                <div className="booking-status">
+                  <span className={`status-badge ${booking.status.toLowerCase()}`}>
+                    {booking.status}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="no-bookings-message">
+            <p>You haven't booked any services yet.</p>
           </div>
         )}
       </div>

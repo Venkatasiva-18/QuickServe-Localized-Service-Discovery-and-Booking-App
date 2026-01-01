@@ -1,44 +1,33 @@
 package Team.C.Service.Spot.mapper;
 
+import org.springframework.stereotype.Component;
 import Team.C.Service.Spot.dto.customer.CustomerRegistrationDTO;
 import Team.C.Service.Spot.dto.customer.CustomerResponseDTO;
 import Team.C.Service.Spot.dto.customer.CustomerUpdateDTO;
 import Team.C.Service.Spot.model.Customer;
-import org.springframework.stereotype.Component;
 
 import java.util.Base64;
 
 /**
- * Mapper utility for Customer entity and DTOs
- * Handles all conversions between Customer entity and various DTOs
- * Keeps mapping logic centralized and reusable
+ * Mapper utility for Customer entity-DTO conversions
  */
 @Component
 public class CustomerMapper {
 
     /**
-     * Convert CustomerRegistrationDTO to Customer Entity
-     * Used during customer registration
-     *
-     * @param dto CustomerRegistrationDTO
-     * @return Customer entity (without ID, createdAt, updatedAt - managed by JPA)
+     * Convert registration DTO to entity (password NOT set here - handled in
+     * service)
      */
     public Customer registrationDtoToEntity(CustomerRegistrationDTO dto) {
-        if (dto == null) {
-            return null;
-        }
-
         byte[] profileImageBytes = null;
         if (dto.getProfileImage() != null && !dto.getProfileImage().isEmpty()) {
             try {
-                // Remove data:image prefix if present
-                String base64Image = dto.getProfileImage();
-                if (base64Image.contains(",")) {
-                    base64Image = base64Image.split(",")[1];
+                String base64Data = dto.getProfileImage();
+                if (base64Data.contains(",")) {
+                    base64Data = base64Data.split(",")[1];
                 }
-                profileImageBytes = Base64.getDecoder().decode(base64Image);
+                profileImageBytes = Base64.getDecoder().decode(base64Data);
             } catch (IllegalArgumentException e) {
-                // Invalid base64, leave as null
                 profileImageBytes = null;
             }
         }
@@ -46,7 +35,6 @@ public class CustomerMapper {
         return Customer.builder()
                 .name(dto.getName())
                 .email(dto.getEmail())
-                // Password will be set separately (after encoding)
                 .phone(dto.getPhone())
                 .doorNo(dto.getDoorNo())
                 .addressLine(dto.getAddressLine())
@@ -54,30 +42,22 @@ public class CustomerMapper {
                 .state(dto.getState())
                 .pincode(dto.getPincode())
                 .country(dto.getCountry() != null ? dto.getCountry() : "India")
-                .latitude(dto.getLatitude() != null ? dto.getLatitude() : 0.0)
-                .longitude(dto.getLongitude() != null ? dto.getLongitude() : 0.0)
-                .verified(false) // New customers are unverified by default
+                .latitude(dto.getLatitude())
+                .longitude(dto.getLongitude())
+                .verified(false)
                 .role("CUSTOMER")
                 .profileImage(profileImageBytes)
                 .build();
     }
 
     /**
-     * Convert Customer Entity to CustomerResponseDTO
-     * Used when returning customer data in API responses
-     *
-     * @param customer Customer entity
-     * @return CustomerResponseDTO (without password)
+     * Convert entity to response DTO (excludes password)
      */
     public CustomerResponseDTO entityToResponseDto(Customer customer) {
-        if (customer == null) {
-            return null;
-        }
-
         String profileImageBase64 = null;
-        if (customer.getProfileImage() != null && customer.getProfileImage().length > 0) {
+        if (customer.getProfileImage() != null) {
             profileImageBase64 = "data:image/jpeg;base64," +
-                                Base64.getEncoder().encodeToString(customer.getProfileImage());
+                    Base64.getEncoder().encodeToString(customer.getProfileImage());
         }
 
         return CustomerResponseDTO.builder()
@@ -95,70 +75,44 @@ public class CustomerMapper {
                 .longitude(customer.getLongitude())
                 .verified(customer.getVerified())
                 .role(customer.getRole())
-                .createdAt(customer.getCreatedAt())
-                .updatedAt(customer.getUpdatedAt())
                 .profileImage(profileImageBase64)
                 .build();
-        // Note: Password is NOT included in response DTO
     }
 
     /**
-     * Update Customer Entity from CustomerUpdateDTO
-     * Used when customer updates their profile
-     * Only updates non-null fields from DTO (partial update)
-     *
-     * @param customer Existing customer entity
-     * @param dto CustomerUpdateDTO with updated fields
+     * Update entity from update DTO (only non-null fields)
      */
     public void updateEntityFromDto(Customer customer, CustomerUpdateDTO dto) {
-        if (dto == null || customer == null) {
-            return;
-        }
-
-        if (dto.getName() != null && !dto.getName().isEmpty()) {
+        if (dto.getName() != null)
             customer.setName(dto.getName());
-        }
-        if (dto.getPhone() != null && !dto.getPhone().isEmpty()) {
+        if (dto.getPhone() != null)
             customer.setPhone(dto.getPhone());
-        }
-        if (dto.getDoorNo() != null && !dto.getDoorNo().isEmpty()) {
+        if (dto.getDoorNo() != null)
             customer.setDoorNo(dto.getDoorNo());
-        }
-        if (dto.getAddressLine() != null && !dto.getAddressLine().isEmpty()) {
+        if (dto.getAddressLine() != null)
             customer.setAddressLine(dto.getAddressLine());
-        }
-        if (dto.getCity() != null && !dto.getCity().isEmpty()) {
+        if (dto.getCity() != null)
             customer.setCity(dto.getCity());
-        }
-        if (dto.getState() != null && !dto.getState().isEmpty()) {
+        if (dto.getState() != null)
             customer.setState(dto.getState());
-        }
-        if (dto.getPincode() != null) {
+        if (dto.getPincode() != null)
             customer.setPincode(dto.getPincode());
-        }
-        if (dto.getCountry() != null && !dto.getCountry().isEmpty()) {
+        if (dto.getCountry() != null)
             customer.setCountry(dto.getCountry());
-        }
-        if (dto.getLatitude() != null) {
+        if (dto.getLatitude() != null)
             customer.setLatitude(dto.getLatitude());
-        }
-        if (dto.getLongitude() != null) {
+        if (dto.getLongitude() != null)
             customer.setLongitude(dto.getLongitude());
-        }
+
         if (dto.getProfileImage() != null && !dto.getProfileImage().isEmpty()) {
             try {
-                // Remove data:image prefix if present
-                String base64Image = dto.getProfileImage();
-                if (base64Image.contains(",")) {
-                    base64Image = base64Image.split(",")[1];
+                String base64Data = dto.getProfileImage();
+                if (base64Data.contains(",")) {
+                    base64Data = base64Data.split(",")[1];
                 }
-                byte[] profileImageBytes = Base64.getDecoder().decode(base64Image);
-                customer.setProfileImage(profileImageBytes);
-            } catch (IllegalArgumentException e) {
-                // Invalid base64, don't update
+                customer.setProfileImage(Base64.getDecoder().decode(base64Data));
+            } catch (IllegalArgumentException ignored) {
             }
         }
-        // updatedAt will be automatically updated by @UpdateTimestamp
     }
 }
-

@@ -8,9 +8,7 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 /**
- * DTO for Provider Response
- * Used when returning provider data in API responses
- * DOES NOT contain password field for security
+ * DTO for provider API responses - NO PASSWORD FIELD for security
  */
 @Data
 @Builder
@@ -34,8 +32,9 @@ public class ProviderResponseDTO {
     private Double longitude;
     private Boolean verified;
     private String role;
+    private String profileImage; // Base64 encoded
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    private String profileImage; // Base64 encoded image
-}
 
+    // NOTE: Password is intentionally NOT included for security
+}

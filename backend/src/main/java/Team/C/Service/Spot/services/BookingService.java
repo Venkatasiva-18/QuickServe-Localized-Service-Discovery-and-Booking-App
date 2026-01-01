@@ -28,8 +28,9 @@ public class BookingService {
             throw new IllegalArgumentException("Booking cannot be null");
         }
         
-        if (booking.getCustomer() == null || booking.getCustomer().getId() == null) {
-            throw new IllegalArgumentException("Customer is required");
+        if ((booking.getCustomer() == null || booking.getCustomer().getId() == null) && 
+            (booking.getProviderBooker() == null || booking.getProviderBooker().getId() == null)) {
+            throw new IllegalArgumentException("Customer or Provider Booker is required");
         }
         
         if (booking.getProvider() == null || booking.getProvider().getId() == null) {
@@ -53,6 +54,10 @@ public class BookingService {
     
     public List<Booking> getProviderBookings(Long providerId) {
         return bookingRepo.findProviderBookings(providerId);
+    }
+
+    public List<Booking> getProviderMadeBookings(Long providerId) {
+        return bookingRepo.findProviderMadeBookings(providerId);
     }
     
     public List<Booking> getServiceBookings(Long serviceId) {

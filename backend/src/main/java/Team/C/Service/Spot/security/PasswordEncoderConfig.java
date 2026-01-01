@@ -6,24 +6,14 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 /**
- * Security Configuration for Password Encoding
- * Uses BCrypt algorithm for secure password hashing
- *
- * @author Service-Spot Team
- * @version 1.0
+ * Password Encoder Configuration
+ * Provides BCrypt password hashing for secure password storage
  */
 @Configuration
 public class PasswordEncoderConfig {
 
-    /**
-     * BCrypt Password Encoder Bean
-     * Strength: 10 (default, provides good balance between security and performance)
-     *
-     * @return PasswordEncoder instance for encoding and verifying passwords
-     */
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
+        return new BCryptPasswordEncoder(10);
     }
 }
-

@@ -12,8 +12,6 @@ import org.springframework.stereotype.Repository;
 public interface ProviderRepo extends JpaRepository<Provider, Long> {
     Optional<Provider> findByEmail(String email);
     
-    Optional<Provider> findByPhone(String phone);
-
     List<Provider> findByVerified(Boolean verified);
     
     List<Provider> findByCity(String city);

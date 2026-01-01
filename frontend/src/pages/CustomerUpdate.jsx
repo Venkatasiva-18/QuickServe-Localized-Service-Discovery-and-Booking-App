@@ -2,6 +2,57 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import "./CustomerUpdate.css";
 import { FaUserEdit, FaMapMarkerAlt, FaUserCircle } from "react-icons/fa";
+import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from "react-leaflet";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+
+function MapClickHandler({ onLocationSelect }) {
+  useMapEvents({
+    click: (e) => {
+      console.log("Map clicked at:", e.latlng.lat, e.latlng.lng);
+      onLocationSelect([e.latlng.lat, e.latlng.lng]);
+    },
+  });
+  return null;
+}
+
+function MapZoomController({ onCenterChange }) {
+  const map = useMap();
+  
+  const handleZoomIn = () => map.zoomIn();
+  const handleZoomOut = () => map.zoomOut();
+  
+  return (
+    <div style={{
+      position: "absolute",
+      top: "10px",
+      right: "10px",
+      zIndex: 1000,
+      display: "flex",
+      flexDirection: "column",
+      gap: "5px"
+    }}>
+      <button onClick={handleZoomIn} style={{
+        padding: "8px 12px",
+        backgroundColor: "#fff",
+        border: "2px solid #ccc",
+        borderRadius: "4px",
+        cursor: "pointer",
+        fontSize: "16px",
+        fontWeight: "bold"
+      }}>+</button>
+      <button onClick={handleZoomOut} style={{
+        padding: "8px 12px",
+        backgroundColor: "#fff",
+        border: "2px solid #ccc",
+        borderRadius: "4px",
+        cursor: "pointer",
+        fontSize: "16px",
+        fontWeight: "bold"
+      }}>−</button>
+    </div>
+  );
+}
 
 export default function CustomerUpdate() {
 
@@ -23,6 +74,9 @@ export default function CustomerUpdate() {
 
   const [imagePreview, setImagePreview] = useState(null);
   const [imageFile, setImageFile] = useState(null);
+  const [showMap, setShowMap] = useState(false);
+  const [mapCenter, setMapCenter] = useState([17.3850, 78.4867]);
+  const [searchInput, setSearchInput] = useState("");
 
   // Fetch existing details
   useEffect(() => {
@@ -54,18 +108,41 @@ export default function CustomerUpdate() {
     setForm({...form, [e.target.name]: e.target.value});
   };
 
-  // Get current location
-  const getLocation = () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition((pos) => {
-        setForm({
-          ...form,
-          latitude: pos.coords.latitude,
-          longitude: pos.coords.longitude
-        });
-      });
-    } else {
-      alert("Geolocation not supported!");
+  const handleLocationSelect = (coords) => {
+    console.log("Location selected:", coords[0].toFixed(4), coords[1].toFixed(4));
+    const updatedForm = {
+      ...form,
+      latitude: coords[0].toFixed(4),
+      longitude: coords[1].toFixed(4)
+    };
+    console.log("Updated form:", updatedForm);
+    setForm(updatedForm);
+    setShowMap(false);
+  };
+
+  const searchLocation = async () => {
+    if (!searchInput.trim()) {
+      alert("Please enter a city name");
+      return;
+    }
+    
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(searchInput)}&format=json&limit=1`
+      );
+      const data = await response.json();
+      
+      if (data.length > 0) {
+        const lat = parseFloat(data[0].lat);
+        const lon = parseFloat(data[0].lon);
+        setMapCenter([lat, lon]);
+        setSearchInput("");
+      } else {
+        alert("Location not found. Try another city name.");
+      }
+    } catch (err) {
+      console.error("Search error:", err);
+      alert("Error searching location");
     }
   };
 
@@ -190,18 +267,66 @@ export default function CustomerUpdate() {
           <legend>Location</legend>
 
           <div className="form-group">
-            <label>Latitude</label>
-            <input type="text" name="latitude" placeholder="Detected automatically" value={form.latitude} onChange={handleChange} />
+            <label>Latitude (e.g., 14.4426 for Ongole)</label>
+            <input type="number" step="0.0001" name="latitude" placeholder="e.g., 14.4426" value={form.latitude} onChange={handleChange} />
           </div>
 
           <div className="form-group">
-            <label>Longitude</label>
-            <input type="text" name="longitude" placeholder="Detected automatically" value={form.longitude} onChange={handleChange} />
+            <label>Longitude (e.g., 79.6304 for Ongole)</label>
+            <input type="number" step="0.0001" name="longitude" placeholder="e.g., 79.6304" value={form.longitude} onChange={handleChange} />
           </div>
 
-          <button type="button" className="location-btn" onClick={getLocation}>
-            <FaMapMarkerAlt /> Get Current Location
+          <button type="button" className="location-btn" onClick={() => setShowMap(!showMap)}>
+            <FaMapMarkerAlt /> {showMap ? "Close Map" : "Select Location on Map"}
           </button>
+          
+          {showMap && (
+            <div className="map-wrapper">
+              <div className="map-search-container">
+                <input
+                  type="text"
+                  placeholder="Search city (e.g., Ongole, Hyderabad)"
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                  onKeyPress={(e) => e.key === "Enter" && searchLocation()}
+                  className="map-search-input"
+                />
+                <button onClick={searchLocation} className="map-search-btn">Search</button>
+              </div>
+              <p className="map-tip">
+                💡 Tip: Scroll to zoom, drag to pan, click on map to select location
+              </p>
+              <div className="map-container">
+                <MapContainer 
+                  center={mapCenter} 
+                  zoom={13} 
+                  scrollWheelZoom={true} 
+                  dragging={true}
+                  touchZoom={true}
+                  doubleClickZoom={true}
+                  boxZoom={true}
+                  keyboard={true}
+                  style={{ 
+                    height: "100%", 
+                    width: "100%"
+                  }}
+                >
+                  <TileLayer
+                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  />
+                  {form.latitude && form.longitude && (
+                    <Marker position={[parseFloat(form.latitude), parseFloat(form.longitude)]} />
+                  )}
+                  <MapClickHandler onLocationSelect={handleLocationSelect} />
+                  <MapZoomController />
+                </MapContainer>
+                <div className="map-location-hint">
+                  📍 Click on map to select location
+                </div>
+              </div>
+            </div>
+          )}
         </fieldset>
 
         <button type="submit" className="update-btn">Update Profile</button>

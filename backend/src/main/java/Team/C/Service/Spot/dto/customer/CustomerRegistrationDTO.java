@@ -7,9 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * DTO for Customer Registration
- * Used when a new customer signs up
- * Contains all required fields with validation
+ * DTO for customer registration with full validation
  */
 @Data
 @Builder
@@ -22,19 +20,16 @@ public class CustomerRegistrationDTO {
     private String name;
 
     @NotBlank(message = "Email is required")
-    @Email(message = "Email must be valid")
+    @Email(message = "Please provide a valid email address")
     private String email;
 
     @NotBlank(message = "Password is required")
-    @Size(min = 8, max = 100, message = "Password must be at least 8 characters")
-    @Pattern(
-        regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=]).*$",
-        message = "Password must contain at least one digit, one lowercase, one uppercase, and one special character"
-    )
+    @Size(min = 8, message = "Password must be at least 8 characters")
+    @Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!]).*$", message = "Password must contain at least one digit, one lowercase, one uppercase, and one special character")
     private String password;
 
     @NotBlank(message = "Phone is required")
-    @Pattern(regexp = "^[0-9]{10}$", message = "Phone must be 10 digits")
+    @Pattern(regexp = "^[0-9]{10}$", message = "Phone must be exactly 10 digits")
     private String phone;
 
     @NotBlank(message = "Door number is required")
@@ -65,7 +60,5 @@ public class CustomerRegistrationDTO {
     @DecimalMax(value = "180.0", message = "Longitude must be between -180 and 180")
     private Double longitude;
 
-    // Profile image as Base64 string (optional during registration)
-    private String profileImage;
+    private String profileImage; // Base64 encoded
 }
-

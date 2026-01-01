@@ -2,11 +2,15 @@ package Team.C.Service.Spot.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import Team.C.Service.Spot.dto.CustomerDTO;
+import Team.C.Service.Spot.dto.NotificationRequest;
 import Team.C.Service.Spot.model.Customer;
 import Team.C.Service.Spot.services.CustomerService;
+import Team.C.Service.Spot.services.NotificationService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -17,15 +21,22 @@ import java.util.Map;
 @RequestMapping("/api/customer")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "http://localhost:5173")
+@Slf4j
 public class CustomerController {
 
     private final CustomerService customerService;
+    private final NotificationService notificationService;
+    private final PasswordEncoder passwordEncoder;
+
+    private static final String ADMIN_EMAIL = "admin@servicespot.com";
 
     private CustomerDTO mapToDTO(Customer customer) {
         String profileImageBase64 = null;
         if (customer.getProfileImage() != null) {
-            System.out.println("Converting image to base64. Customer ID: " + customer.getId() + ", Image bytes: " + customer.getProfileImage().length);
-            profileImageBase64 = "data:image/jpeg;base64," + java.util.Base64.getEncoder().encodeToString(customer.getProfileImage());
+            System.out.println("Converting image to base64. Customer ID: " + customer.getId() + ", Image bytes: "
+                    + customer.getProfileImage().length);
+            profileImageBase64 = "data:image/jpeg;base64,"
+                    + java.util.Base64.getEncoder().encodeToString(customer.getProfileImage());
             System.out.println("Converted to base64. Length: " + profileImageBase64.length());
         } else {
             System.out.println("No image found for customer ID: " + customer.getId());
@@ -57,10 +68,10 @@ public class CustomerController {
                 pincode = 0;
             }
         }
-        
+
         Double latitude = dto.getLatitude() != null ? dto.getLatitude() : 0.0;
         Double longitude = dto.getLongitude() != null ? dto.getLongitude() : 0.0;
-        
+
         byte[] profileImageBytes = null;
         if (dto.getProfileImage() != null && !dto.getProfileImage().isEmpty()) {
             try {
@@ -69,7 +80,7 @@ public class CustomerController {
                 profileImageBytes = null;
             }
         }
-        
+
         return Customer.builder()
                 .name(dto.getName())
                 .email(dto.getEmail())
@@ -89,11 +100,33 @@ public class CustomerController {
                 .build();
     }
 
-    @PostMapping(value = "/signup", consumes = {"application/json"}, produces = {"application/json"})
+    @PostMapping(value = "/signup", consumes = { "application/json" }, produces = { "application/json" })
     public ResponseEntity<?> signup(@RequestBody CustomerDTO dto) {
         try {
             Customer customer = mapToEntity(dto);
+            // Hash password with BCrypt before saving
+            customer.setPassword(passwordEncoder.encode(dto.getPassword()));
             Customer saved = customerService.signup(customer);
+
+            // Notify admin about new customer registration
+            try {
+                NotificationRequest request = NotificationRequest.builder()
+                        .recipientEmail(ADMIN_EMAIL)
+                        .recipientRole("ADMIN")
+                        .title("New Customer Registered")
+                        .message("New customer '" + saved.getName() + "' has registered.")
+                        .type("NEW_CUSTOMER_REGISTERED")
+                        .senderName(saved.getName())
+                        .priority("NORMAL")
+                        .actionUrl("/admin-customers")
+                        .build();
+
+                notificationService.createNotification(request);
+                log.info("Admin notified about new customer: {}", saved.getEmail());
+            } catch (Exception ex) {
+                log.warn("Failed to notify admin about new customer: {}", ex.getMessage());
+            }
+
             return ResponseEntity.status(HttpStatus.CREATED).body(mapToDTO(saved));
         } catch (Exception e) {
             Map<String, String> error = new HashMap<>();
@@ -102,10 +135,11 @@ public class CustomerController {
         }
     }
 
-    @PostMapping(value = "/login", consumes = {"application/json"}, produces = {"application/json"})
+    @PostMapping(value = "/login", consumes = { "application/json" }, produces = { "application/json" })
     public ResponseEntity<?> login(@RequestBody CustomerDTO dto) {
         var customer = customerService.getCustomerByEmail(dto.getEmail());
-        if (customer.isPresent() && customer.get().getPassword().equals(dto.getPassword())) {
+        // Use BCrypt to verify password
+        if (customer.isPresent() && passwordEncoder.matches(dto.getPassword(), customer.get().getPassword())) {
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("message", "Login successful");
@@ -190,29 +224,35 @@ public class CustomerController {
     }
 
     @PostMapping("/{id}/upload-image")
-    public ResponseEntity<?> uploadProfileImage(@PathVariable Long id, @RequestParam("file") org.springframework.web.multipart.MultipartFile file) {
+    public ResponseEntity<?> uploadProfileImage(@PathVariable Long id,
+            @RequestParam("file") org.springframework.web.multipart.MultipartFile file) {
         try {
             System.out.println("Upload image request for customer: " + id);
-            System.out.println("Received file: " + (file != null && !file.isEmpty() ? "Yes, size: " + file.getSize() : "No"));
-            
+            System.out.println(
+                    "Received file: " + (file != null && !file.isEmpty() ? "Yes, size: " + file.getSize() : "No"));
+
             if (file == null || file.isEmpty()) {
                 System.out.println("No file provided");
                 return ResponseEntity.badRequest().body("No file provided");
             }
-            
+
             byte[] imageBytes = file.getBytes();
             System.out.println("Image bytes received: " + imageBytes.length);
-            
+
             Customer customer = customerService.getCustomerById(id)
                     .orElseThrow(() -> new Exception("Customer not found"));
-            
+
             System.out.println("Before update - Customer has image: " + (customer.getProfileImage() != null));
             customer.setProfileImage(imageBytes);
-            System.out.println("After setting - Customer has image: " + (customer.getProfileImage() != null ? "Yes, " + customer.getProfileImage().length + " bytes" : "No"));
-            
+            System.out.println("After setting - Customer has image: "
+                    + (customer.getProfileImage() != null ? "Yes, " + customer.getProfileImage().length + " bytes"
+                            : "No"));
+
             Customer updated = customerService.updateCustomer(id, customer);
-            System.out.println("After save - Updated customer has image: " + (updated.getProfileImage() != null ? "Yes, " + updated.getProfileImage().length + " bytes" : "No"));
-            
+            System.out.println("After save - Updated customer has image: "
+                    + (updated.getProfileImage() != null ? "Yes, " + updated.getProfileImage().length + " bytes"
+                            : "No"));
+
             return ResponseEntity.ok(mapToDTO(updated));
         } catch (Exception e) {
             System.out.println("Upload error: " + e.getMessage());

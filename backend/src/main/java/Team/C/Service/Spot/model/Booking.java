@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -24,8 +25,12 @@ public class Booking {
     private Long id;
     
     @ManyToOne
-    @JoinColumn(name = "customer_id", nullable = false)
+    @JoinColumn(name = "customer_id", nullable = true)
     private Customer customer;
+
+    @ManyToOne
+    @JoinColumn(name = "provider_booker_id", nullable = true)
+    private Provider providerBooker;
     
     @ManyToOne
     @JoinColumn(name = "provider_id", nullable = false)
@@ -53,8 +58,8 @@ public class Booking {
     @Column(nullable = true)
     private String notes;
     
-    @Column(nullable = false, columnDefinition = "DECIMAL(10,2) DEFAULT 0.00")
-    private Double totalAmount = 0.0;
+    @Column(nullable = false, precision = 10, scale = 2)
+    private BigDecimal totalAmount = BigDecimal.ZERO;
     
     @CreationTimestamp
     @Column(nullable = false, updatable = false)

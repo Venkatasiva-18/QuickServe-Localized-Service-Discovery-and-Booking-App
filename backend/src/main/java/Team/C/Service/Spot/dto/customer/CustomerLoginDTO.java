@@ -8,8 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * DTO for Customer Login
- * Used when a customer attempts to log in
+ * DTO for customer login - minimal fields
  */
 @Data
 @Builder
@@ -18,10 +17,9 @@ import lombok.NoArgsConstructor;
 public class CustomerLoginDTO {
 
     @NotBlank(message = "Email is required")
-    @Email(message = "Email must be valid")
+    @Email(message = "Please provide a valid email address")
     private String email;
 
     @NotBlank(message = "Password is required")
     private String password;
 }
-

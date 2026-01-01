@@ -18,11 +18,25 @@ export default function SearchResults() {
   const [error, setError] = useState(null);
   const [sortBy, setSortBy] = useState("relevant");
   const [priceRange, setPriceRange] = useState(10000);
+  const [toast, setToast] = useState(null);
+
+  const showToast = (message, type = "error") => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 4000);
+  };
 
   const handleBookNow = (item) => {
-    if (!localStorage.getItem("loggedIn")) {
-      alert("Please login as a customer to book a service.");
-      navigate("/login-customer");
+    const loggedIn = localStorage.getItem("loggedIn") === "true";
+    const role = localStorage.getItem("role");
+    
+    if (!loggedIn) {
+      showToast("Please log in as a customer to book a service.", "warning");
+      setTimeout(() => navigate("/login-customer"), 1500);
+      return;
+    }
+    
+    if (role === "provider" || role === "admin") {
+      showToast("Providers and admins cannot book services. Only customers can book.", "error");
       return;
     }
     
@@ -294,6 +308,12 @@ export default function SearchResults() {
               </div>
             )}
           </main>
+        </div>
+      )}
+      
+      {toast && (
+        <div className={`toast toast-${toast.type}`}>
+          <p>{toast.message}</p>
         </div>
       )}
     </div>

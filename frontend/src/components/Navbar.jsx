@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import "./Navbar.css";
 import { FaSearch } from "react-icons/fa";
+import NotificationBell from "./NotificationBell";
 
 export default function Navbar() {
 
@@ -154,6 +155,7 @@ export default function Navbar() {
         <ul className="nav-links">
 
           <li><Link to="/">Home</Link></li>
+          <li><Link to="/nearby-services">Nearby Services</Link></li>
 
           {!loggedIn && (
             <>
@@ -184,6 +186,9 @@ export default function Navbar() {
             </>
           )}
         </ul>
+
+        {/* Notification Bell for logged-in users */}
+        {loggedIn && <NotificationBell />}
 
         {/* ⭐ Hide logout on login pages */}
         {loggedIn && !loginPages.includes(location.pathname) && (

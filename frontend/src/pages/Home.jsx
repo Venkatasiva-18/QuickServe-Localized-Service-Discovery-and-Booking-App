@@ -1,8 +1,74 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import "./Home.css";
 import Search from "../components/Search";
 
+const AnimatedCounter = ({ end, duration = 2000, format = "number" }) => {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    let startTime;
+    let animationFrameId;
+
+    const animate = (currentTime) => {
+      if (!startTime) startTime = currentTime;
+      const elapsed = currentTime - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+
+      if (format === "decimal") {
+        setCount((end * progress).toFixed(1));
+      } else {
+        setCount(Math.floor(end * progress));
+      }
+
+      if (progress < 1) {
+        animationFrameId = requestAnimationFrame(animate);
+      }
+    };
+
+    animationFrameId = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(animationFrameId);
+  }, [end, duration, format]);
+
+  return count;
+};
+
 export default function Home() {
+  const [stats, setStats] = useState({
+    tasksCompleted: 6000,
+    verifiedProfessionals: 1200,
+    customerSatisfaction: 4.9
+  });
+  const [animated, setAnimated] = useState(false);
+
+  useEffect(() => {
+    fetchStatistics();
+    setAnimated(true);
+  }, []);
+
+  const fetchStatistics = async () => {
+    try {
+      const response = await fetch("http://localhost:8080/api/admin/statistics", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json"
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          setStats({
+            tasksCompleted: data.tasksCompleted || 6000,
+            verifiedProfessionals: data.verifiedProfessionals || 1200,
+            customerSatisfaction: data.customerSatisfaction || 4.9
+          });
+        }
+      }
+    } catch (error) {
+      console.log("Using static statistics", error);
+    }
+  };
+
   return (
     <div className="home-container">
       
@@ -40,17 +106,49 @@ export default function Home() {
           {/* METRICS */}
           <div className="hero-metrics">
             <div>
-              <strong>6k+</strong>
+              <strong>
+                {animated ? (
+                  <>
+                    <AnimatedCounter end={stats.tasksCompleted} duration={2000} format="number" />k+
+                  </>
+                ) : (
+                  "6k+"
+                )}
+              </strong>
               <span>Tasks Completed</span>
             </div>
 
             <div>
-              <strong>1.2k</strong>
+              <strong>
+                {animated ? (
+                  <>
+                    <AnimatedCounter 
+                      end={Math.round((stats.verifiedProfessionals / 1000) * 10) / 10} 
+                      duration={2000} 
+                      format="decimal" 
+                    />k
+                  </>
+                ) : (
+                  "1.2k"
+                )}
+              </strong>
               <span>Verified Professionals</span>
             </div>
 
             <div>
-              <strong>4.9/5</strong>
+              <strong>
+                {animated ? (
+                  <>
+                    <AnimatedCounter 
+                      end={stats.customerSatisfaction} 
+                      duration={2000} 
+                      format="decimal" 
+                    />
+                  </>
+                ) : (
+                  "4.9"
+                )}/5
+              </strong>
               <span>Customer Satisfaction</span>
             </div>
           </div>
@@ -61,10 +159,10 @@ export default function Home() {
           <h3>Why Choose ServiceSpot? ⭐</h3>
 
           <ul>
-            <li>✔️ Background-verified professionals</li>
-            <li>✔️ Instant booking slots matching your schedule</li>
-            <li>✔️ Transparent pricing — no hidden charges</li>
-            <li>✔️ 24/7 customer support anytime you need</li>
+            <li>Background-verified professionals</li>
+            <li>Instant booking slots matching your schedule</li>
+            <li>Transparent pricing — no hidden charges</li>
+            <li>24/7 customer support anytime you need</li>
           </ul>
         </div>
       </section>

@@ -7,9 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * DTO for Customer Profile Update
- * Used when a customer updates their profile information
- * All fields are optional to allow partial updates
+ * DTO for customer profile updates - all fields optional for partial updates
  */
 @Data
 @Builder
@@ -20,7 +18,7 @@ public class CustomerUpdateDTO {
     @Size(min = 2, max = 100, message = "Name must be between 2 and 100 characters")
     private String name;
 
-    @Pattern(regexp = "^[0-9]{10}$", message = "Phone must be 10 digits")
+    @Pattern(regexp = "^[0-9]{10}$", message = "Phone must be exactly 10 digits")
     private String phone;
 
     private String doorNo;
@@ -46,11 +44,7 @@ public class CustomerUpdateDTO {
     @DecimalMax(value = "180.0", message = "Longitude must be between -180 and 180")
     private Double longitude;
 
-    // Profile image as Base64 string
-    private String profileImage;
+    private String profileImage; // Base64 encoded
 
-    // Note: Email and password are NOT in update DTO
-    // Email change should be a separate, verified process
-    // Password change should be a separate, secure process
+    // NOTE: Email and Password changes require separate secure processes
 }
-

@@ -5,6 +5,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Lob;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -70,6 +71,11 @@ public class Customer {
     @Column(name = "updated_at", nullable=false)
     private LocalDateTime updatedAt;
 
-    @Column(nullable=true, columnDefinition="LONGBLOB")
+    @Lob
+    @Column(nullable=true)
     private byte[] profileImage;
+    
+    @Column(nullable = false)
+    @Builder.Default
+    private Boolean emailVerified = false;
 }

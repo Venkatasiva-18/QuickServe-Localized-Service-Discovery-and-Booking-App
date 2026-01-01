@@ -39,4 +39,7 @@ public interface ServiceRepo extends JpaRepository<Service, Long> {
     
     @Query("SELECT s FROM Service s WHERE LOWER(s.name) LIKE LOWER(CONCAT('%', :name, '%')) AND LOWER(s.city) = LOWER(:city) ORDER BY s.provider.verified DESC, s.rating DESC")
     List<Service> searchByNameAndCityWithAllProviders(@Param("name") String name, @Param("city") String city);
+
+    @Query("SELECT COUNT(s) FROM Service s WHERE s.provider.id = :providerId AND s.isActive = true")
+    Long countActiveServicesByProviderId(@Param("providerId") Long providerId);
 }

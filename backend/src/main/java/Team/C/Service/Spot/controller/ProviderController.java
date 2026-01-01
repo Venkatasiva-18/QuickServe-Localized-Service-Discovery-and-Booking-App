@@ -2,12 +2,16 @@ package Team.C.Service.Spot.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import Team.C.Service.Spot.dto.NotificationRequest;
 import Team.C.Service.Spot.dto.ProviderDTO;
 import Team.C.Service.Spot.model.Provider;
+import Team.C.Service.Spot.services.NotificationService;
 import Team.C.Service.Spot.services.ProviderService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -16,15 +20,22 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/provider")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "http://localhost:5173")
+@Slf4j
 public class ProviderController {
 
     private final ProviderService providerService;
+    private final NotificationService notificationService;
+    private final PasswordEncoder passwordEncoder;
+
+    private static final String ADMIN_EMAIL = "admin@servicespot.com";
 
     private ProviderDTO mapToDTO(Provider provider) {
         String profileImageBase64 = null;
         if (provider.getProfileImage() != null) {
-            System.out.println("Converting image to base64. Provider ID: " + provider.getId() + ", Image bytes: " + provider.getProfileImage().length);
-            profileImageBase64 = "data:image/jpeg;base64," + java.util.Base64.getEncoder().encodeToString(provider.getProfileImage());
+            System.out.println("Converting image to base64. Provider ID: " + provider.getId() + ", Image bytes: "
+                    + provider.getProfileImage().length);
+            profileImageBase64 = "data:image/jpeg;base64,"
+                    + java.util.Base64.getEncoder().encodeToString(provider.getProfileImage());
             System.out.println("Converted to base64. Length: " + profileImageBase64.length());
         } else {
             System.out.println("No image found for provider ID: " + provider.getId());
@@ -47,6 +58,13 @@ public class ProviderController {
                 .verified(provider.getVerified())
                 .profileImage(profileImageBase64)
                 .build();
+    }
+
+    private ProviderDTO mapToDTOWithServiceCount(Provider provider) {
+        ProviderDTO dto = mapToDTO(provider);
+        Long activeServiceCount = providerService.getActiveServiceCount(provider.getId());
+        dto.setActiveServiceCount(activeServiceCount);
+        return dto;
     }
 
     private Provider mapToEntity(ProviderDTO dto) {
@@ -114,9 +132,32 @@ public class ProviderController {
             if (dto.getServiceType() == null || dto.getServiceType().isEmpty()) {
                 return ResponseEntity.badRequest().body("Service type is required");
             }
-            
+
             Provider provider = mapToEntity(dto);
+            // Hash password with BCrypt before saving
+            provider.setPassword(passwordEncoder.encode(dto.getPassword()));
             Provider savedProvider = providerService.signup(provider);
+
+            // Notify admin about new provider registration
+            try {
+                NotificationRequest request = NotificationRequest.builder()
+                        .recipientEmail(ADMIN_EMAIL)
+                        .recipientRole("ADMIN")
+                        .title("New Provider Registered")
+                        .message("New provider '" + savedProvider.getName() + "' has registered. Service: "
+                                + savedProvider.getServiceType())
+                        .type("NEW_PROVIDER_REGISTERED")
+                        .senderName(savedProvider.getName())
+                        .priority("HIGH")
+                        .actionUrl("/admin-providers")
+                        .build();
+
+                notificationService.createNotification(request);
+                log.info("Admin notified about new provider: {}", savedProvider.getEmail());
+            } catch (Exception ex) {
+                log.warn("Failed to notify admin about new provider: {}", ex.getMessage());
+            }
+
             return ResponseEntity.status(HttpStatus.CREATED).body(mapToDTO(savedProvider));
         } catch (Exception e) {
             java.util.Map<String, Object> error = new java.util.HashMap<>();
@@ -129,9 +170,10 @@ public class ProviderController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody ProviderDTO dto) {
-        var result = providerService.login(dto.getEmail(), dto.getPassword());
-        if (result.isPresent()) {
-            return ResponseEntity.ok(mapToDTO(result.get()));
+        var providerOpt = providerService.getProviderByEmail(dto.getEmail());
+        // Use BCrypt to verify password
+        if (providerOpt.isPresent() && passwordEncoder.matches(dto.getPassword(), providerOpt.get().getPassword())) {
+            return ResponseEntity.ok(mapToDTO(providerOpt.get()));
         }
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
     }
@@ -179,6 +221,40 @@ public class ProviderController {
         List<Provider> providers = providerService.getVerifiedProviders();
         List<ProviderDTO> dtos = providers.stream().map(this::mapToDTO).collect(Collectors.toList());
         return ResponseEntity.ok(dtos);
+    }
+
+    @GetMapping("/nearby")
+    public ResponseEntity<List<ProviderDTO>> getNearbyProviders(
+            @RequestParam(name = "lat") Double latitude,
+            @RequestParam(name = "lon") Double longitude,
+            @RequestParam(name = "radius", defaultValue = "20") Double radiusKm) {
+        try {
+            List<Provider> providers = providerService.getNearbyProviders(latitude, longitude, radiusKm);
+
+            List<ProviderDTO> dtos = providers.stream().map(provider -> {
+                ProviderDTO dto = mapToDTOWithServiceCount(provider);
+                double distance = calculateDistance(latitude, longitude, provider.getLatitude(),
+                        provider.getLongitude());
+                dto.setDistance(distance);
+                return dto;
+            }).sorted((p1, p2) -> Double.compare(p1.getDistance(), p2.getDistance()))
+                    .collect(Collectors.toList());
+
+            return ResponseEntity.ok(dtos);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new java.util.ArrayList<>());
+        }
+    }
+
+    private double calculateDistance(Double lat1, Double lon1, Double lat2, Double lon2) {
+        final int R = 6371;
+        double latDistance = Math.toRadians(lat2 - lat1);
+        double lonDistance = Math.toRadians(lon2 - lon1);
+        double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
+                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
+                        * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
     }
 
     @GetMapping("/unverified/all")
@@ -231,29 +307,35 @@ public class ProviderController {
     }
 
     @PostMapping("/{id}/upload-image")
-    public ResponseEntity<?> uploadProfileImage(@PathVariable Long id, @RequestParam("file") org.springframework.web.multipart.MultipartFile file) {
+    public ResponseEntity<?> uploadProfileImage(@PathVariable Long id,
+            @RequestParam("file") org.springframework.web.multipart.MultipartFile file) {
         try {
             System.out.println("Upload image request for provider: " + id);
-            System.out.println("Received file: " + (file != null && !file.isEmpty() ? "Yes, size: " + file.getSize() : "No"));
-            
+            System.out.println(
+                    "Received file: " + (file != null && !file.isEmpty() ? "Yes, size: " + file.getSize() : "No"));
+
             if (file == null || file.isEmpty()) {
                 System.out.println("No file provided");
                 return ResponseEntity.badRequest().body("No file provided");
             }
-            
+
             byte[] imageBytes = file.getBytes();
             System.out.println("Image bytes received: " + imageBytes.length);
-            
+
             Provider provider = providerService.getProviderById(id)
                     .orElseThrow(() -> new Exception("Provider not found"));
-            
+
             System.out.println("Before update - Provider has image: " + (provider.getProfileImage() != null));
             provider.setProfileImage(imageBytes);
-            System.out.println("After setting - Provider has image: " + (provider.getProfileImage() != null ? "Yes, " + provider.getProfileImage().length + " bytes" : "No"));
-            
+            System.out.println("After setting - Provider has image: "
+                    + (provider.getProfileImage() != null ? "Yes, " + provider.getProfileImage().length + " bytes"
+                            : "No"));
+
             Provider updated = providerService.updateProvider(id, provider);
-            System.out.println("After save - Updated provider has image: " + (updated.getProfileImage() != null ? "Yes, " + updated.getProfileImage().length + " bytes" : "No"));
-            
+            System.out.println("After save - Updated provider has image: "
+                    + (updated.getProfileImage() != null ? "Yes, " + updated.getProfileImage().length + " bytes"
+                            : "No"));
+
             return ResponseEntity.ok(mapToDTO(updated));
         } catch (Exception e) {
             System.out.println("Upload error: " + e.getMessage());
