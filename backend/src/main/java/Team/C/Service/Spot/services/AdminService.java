@@ -7,7 +7,6 @@ import Team.C.Service.Spot.repositery.AdminRepo;
 import Team.C.Service.Spot.repositery.CustomerRepo;
 import Team.C.Service.Spot.repositery.ProviderRepo;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
@@ -19,47 +18,26 @@ public class AdminService {
     private final AdminRepo adminRepo;
     private final CustomerRepo customerRepo;
     private final ProviderRepo providerRepo;
-    private final PasswordEncoder passwordEncoder;
     
     public Optional<Admin> findByEmail(String email) {
         return adminRepo.findByEmail(email);
     }
     
-    private boolean checkPassword(String rawPassword, String storedPassword) {
-        if (storedPassword == null || storedPassword.isEmpty()) return false;
-        if (storedPassword.startsWith("$2a$")) {
-            return passwordEncoder.matches(rawPassword, storedPassword);
-        }
-        return rawPassword.equals(storedPassword);
-    }
-
     public Admin authenticateAdmin(String email, String password) {
         Optional<Admin> admin = adminRepo.findByEmail(email);
-        if (admin.isPresent() && checkPassword(password, admin.get().getPassword())) {
-            Admin a = admin.get();
-            if (!a.getPassword().startsWith("$2a$")) {
-                a.setPassword(passwordEncoder.encode(password));
-                adminRepo.save(a);
-            }
-            return a;
+        if (admin.isPresent() && admin.get().getPassword().equals(password)) {
+            return admin.get();
         }
         
         Optional<Customer> customer = customerRepo.findByEmail(email);
         if (customer.isPresent() && customer.get().getRole() != null && 
             customer.get().getRole().equals("ADMIN") && 
-            checkPassword(password, customer.get().getPassword())) {
-            
-            Customer c = customer.get();
-            if (!c.getPassword().startsWith("$2a$")) {
-                c.setPassword(passwordEncoder.encode(password));
-                customerRepo.save(c);
-            }
-
+            customer.get().getPassword().equals(password)) {
             Admin adminFromCustomer = Admin.builder()
-                    .id(c.getId())
-                    .name(c.getName())
-                    .email(c.getEmail())
-                    .password(c.getPassword())
+                    .id(customer.get().getId())
+                    .name(customer.get().getName())
+                    .email(customer.get().getEmail())
+                    .password(customer.get().getPassword())
                     .role("ADMIN")
                     .build();
             return adminFromCustomer;
@@ -68,19 +46,12 @@ public class AdminService {
         Optional<Provider> provider = providerRepo.findByEmail(email);
         if (provider.isPresent() && provider.get().getRole() != null && 
             provider.get().getRole().equals("ADMIN") && 
-            checkPassword(password, provider.get().getPassword())) {
-            
-            Provider p = provider.get();
-            if (!p.getPassword().startsWith("$2a$")) {
-                p.setPassword(passwordEncoder.encode(password));
-                providerRepo.save(p);
-            }
-
+            provider.get().getPassword().equals(password)) {
             Admin adminFromProvider = Admin.builder()
-                    .id(p.getId())
-                    .name(p.getName())
-                    .email(p.getEmail())
-                    .password(p.getPassword())
+                    .id(provider.get().getId())
+                    .name(provider.get().getName())
+                    .email(provider.get().getEmail())
+                    .password(provider.get().getPassword())
                     .role("ADMIN")
                     .build();
             return adminFromProvider;
@@ -92,18 +63,13 @@ public class AdminService {
     public Admin createDefaultAdmin() {
         Optional<Admin> existing = adminRepo.findByEmail("admin@servicespot.com");
         if (existing.isPresent()) {
-            Admin a = existing.get();
-            if (a.getPassword() != null && !a.getPassword().startsWith("$2a$")) {
-                a.setPassword(passwordEncoder.encode(a.getPassword()));
-                return adminRepo.save(a);
-            }
-            return a;
+            return existing.get();
         }
         
         Admin admin = Admin.builder()
                 .name("Admin")
                 .email("admin@servicespot.com")
-                .password(passwordEncoder.encode("admin123"))
+                .password("admin123")
                 .role("ADMIN")
                 .build();
         

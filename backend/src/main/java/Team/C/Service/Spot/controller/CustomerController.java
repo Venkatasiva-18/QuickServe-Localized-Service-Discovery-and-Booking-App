@@ -94,6 +94,7 @@ public class CustomerController {
                 .latitude(latitude)
                 .longitude(longitude)
                 .verified(dto.getVerified() != null ? dto.getVerified() : false)
+                .password(dto.getPassword())
                 .role("CUSTOMER")
                 .profileImage(profileImageBytes)
                 .build();
@@ -103,8 +104,8 @@ public class CustomerController {
     public ResponseEntity<?> signup(@RequestBody CustomerDTO dto) {
         try {
             Customer customer = mapToEntity(dto);
-            // Set raw password; customerService.signup will handle hashing
-            customer.setPassword(dto.getPassword());
+            // Hash password with BCrypt before saving
+            customer.setPassword(passwordEncoder.encode(dto.getPassword()));
             Customer saved = customerService.signup(customer);
 
             // Notify admin about new customer registration
@@ -136,8 +137,9 @@ public class CustomerController {
 
     @PostMapping(value = "/login", consumes = { "application/json" }, produces = { "application/json" })
     public ResponseEntity<?> login(@RequestBody CustomerDTO dto) {
-        var customer = customerService.login(dto.getEmail(), dto.getPassword());
-        if (customer.isPresent()) {
+        var customer = customerService.getCustomerByEmail(dto.getEmail());
+        // Use BCrypt to verify password
+        if (customer.isPresent() && passwordEncoder.matches(dto.getPassword(), customer.get().getPassword())) {
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("message", "Login successful");
@@ -192,12 +194,6 @@ public class CustomerController {
     public ResponseEntity<?> updateCustomer(@PathVariable Long id, @RequestBody CustomerDTO dto) {
         try {
             Customer customer = mapToEntity(dto);
-            // ONLY encode if password is provided and NOT already encoded
-            if (dto.getPassword() != null && !dto.getPassword().isEmpty() && !dto.getPassword().startsWith("$2a$")) {
-                customer.setPassword(passwordEncoder.encode(dto.getPassword()));
-            } else if (dto.getPassword() != null && dto.getPassword().startsWith("$2a$")) {
-                customer.setPassword(dto.getPassword());
-            }
             Customer updated = customerService.updateCustomer(id, customer);
             if (updated != null) {
                 return ResponseEntity.ok(mapToDTO(updated));
@@ -214,7 +210,6 @@ public class CustomerController {
 
     @PostMapping("/{id}/update-password")
     public ResponseEntity<?> updatePassword(@PathVariable Long id, @RequestBody CustomerDTO dto) {
-        // Pass raw password; customerService.updatePassword will handle hashing
         Customer updated = customerService.updatePassword(id, dto.getPassword());
         if (updated != null) {
             return ResponseEntity.ok(mapToDTO(updated));

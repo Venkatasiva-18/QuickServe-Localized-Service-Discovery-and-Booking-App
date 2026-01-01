@@ -31,7 +31,6 @@ import ProviderProfile from "./pages/ProviderProfile";
 import ProviderUpdate from "./pages/ProviderUpdate";
 import ProviderDashboard from "./pages/ProviderDashboard";
 import ProviderBookings from "./pages/ProviderBookings";
-import ProviderActiveBooking from "./pages/ProviderActiveBooking";
 
 // Admin
 import AdminDashboard from "./pages/AdminDashboard";
@@ -43,7 +42,6 @@ import AdminContacts from "./pages/AdminContacts";
 import SearchResults from "./pages/SearchResults";
 import NearbyServices from "./pages/NearbyServices";
 import Contact from "./pages/Contact";
-import TrackProvider from "./pages/TrackProvider";
 
 import OTPVerification from "./pages/OTPVerification";
 import ForgotPassword from "./pages/ForgotPassword";

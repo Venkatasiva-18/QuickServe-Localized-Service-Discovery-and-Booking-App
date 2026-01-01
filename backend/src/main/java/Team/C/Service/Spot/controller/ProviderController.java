@@ -81,6 +81,7 @@ public class ProviderController {
         return Provider.builder()
                 .name(dto.getName())
                 .email(dto.getEmail())
+                .password(dto.getPassword())
                 .phone(dto.getPhone())
                 .doorNo(dto.getDoorNo())
                 .addressLine(dto.getAddressLine())
@@ -133,8 +134,8 @@ public class ProviderController {
             }
 
             Provider provider = mapToEntity(dto);
-            // Set raw password; providerService.signup will handle hashing
-            provider.setPassword(dto.getPassword());
+            // Hash password with BCrypt before saving
+            provider.setPassword(passwordEncoder.encode(dto.getPassword()));
             Provider savedProvider = providerService.signup(provider);
 
             // Notify admin about new provider registration
@@ -169,8 +170,9 @@ public class ProviderController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody ProviderDTO dto) {
-        var providerOpt = providerService.login(dto.getEmail(), dto.getPassword());
-        if (providerOpt.isPresent()) {
+        var providerOpt = providerService.getProviderByEmail(dto.getEmail());
+        // Use BCrypt to verify password
+        if (providerOpt.isPresent() && passwordEncoder.matches(dto.getPassword(), providerOpt.get().getPassword())) {
             return ResponseEntity.ok(mapToDTO(providerOpt.get()));
         }
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
@@ -266,12 +268,6 @@ public class ProviderController {
     public ResponseEntity<?> updateProvider(@PathVariable Long id, @RequestBody ProviderDTO dto) {
         try {
             Provider provider = mapToEntity(dto);
-            // ONLY encode if password is provided and NOT already encoded
-            if (dto.getPassword() != null && !dto.getPassword().isEmpty() && !dto.getPassword().startsWith("$2a$")) {
-                provider.setPassword(passwordEncoder.encode(dto.getPassword()));
-            } else if (dto.getPassword() != null && dto.getPassword().startsWith("$2a$")) {
-                provider.setPassword(dto.getPassword());
-            }
             Provider updated = providerService.updateProvider(id, provider);
             if (updated != null) {
                 return ResponseEntity.ok(mapToDTO(updated));

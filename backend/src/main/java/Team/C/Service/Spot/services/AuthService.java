@@ -11,7 +11,6 @@ import Team.C.Service.Spot.repositery.CustomerRepo;
 import Team.C.Service.Spot.repositery.ProviderRepo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,10 +23,8 @@ public class AuthService {
 
     private final CustomerRepo customerRepo;
     private final ProviderRepo providerRepo;
-    private final Team.C.Service.Spot.repositery.AdminRepo adminRepo;
     private final OTPService otpService;
     private final NotificationService notificationService;
-    private final PasswordEncoder passwordEncoder;
 
     // Admin email for notifications
     private static final String ADMIN_EMAIL = "admin@servicespot.com";
@@ -49,7 +46,7 @@ public class AuthService {
         Customer customer = Customer.builder()
                 .name(dto.getName())
                 .email(dto.getEmail())
-                .password(passwordEncoder.encode(dto.getPassword()))
+                .password(dto.getPassword()) // In production, hash this!
                 .phone(dto.getPhone())
                 .doorNo(dto.getDoorNo())
                 .addressLine(dto.getAddressLine())
@@ -117,7 +114,7 @@ public class AuthService {
         Provider provider = Provider.builder()
                 .name(dto.getName())
                 .email(dto.getEmail())
-                .password(passwordEncoder.encode(dto.getPassword()))
+                .password(dto.getPassword()) // In production, hash this!
                 .phone(dto.getPhone())
                 .doorNo(dto.getDoorNo())
                 .addressLine(dto.getAddressLine())
@@ -226,18 +223,6 @@ public class AuthService {
                 .build();
     }
 
-    private boolean checkPassword(String rawPassword, String storedPassword) {
-        if (storedPassword == null || storedPassword.isEmpty()) return false;
-        
-        // If stored password is BCrypt
-        if (storedPassword.startsWith("$2a$")) {
-            return passwordEncoder.matches(rawPassword, storedPassword);
-        }
-        
-        // fallback for plain text passwords
-        return rawPassword.equals(storedPassword);
-    }
-
     /**
      * Login (requires email verification)
      */
@@ -247,18 +232,11 @@ public class AuthService {
         if (customer.isPresent()) {
             Customer c = customer.get();
 
-            if (!checkPassword(request.getPassword(), c.getPassword())) {
+            if (!c.getPassword().equals(request.getPassword())) {
                 return AuthResponse.builder()
                         .success(false)
                         .message("Invalid credentials")
                         .build();
-            }
-
-            // Migration: if password was plain text, hash it now
-            if (!c.getPassword().startsWith("$2a$")) {
-                c.setPassword(passwordEncoder.encode(request.getPassword()));
-                customerRepo.save(c);
-                log.info("Migrated plain text password for customer: {}", c.getEmail());
             }
 
             if (!c.getEmailVerified()) {
@@ -287,18 +265,11 @@ public class AuthService {
         if (provider.isPresent()) {
             Provider p = provider.get();
 
-            if (!checkPassword(request.getPassword(), p.getPassword())) {
+            if (!p.getPassword().equals(request.getPassword())) {
                 return AuthResponse.builder()
                         .success(false)
                         .message("Invalid credentials")
                         .build();
-            }
-
-            // Migration: if password was plain text, hash it now
-            if (!p.getPassword().startsWith("$2a$")) {
-                p.setPassword(passwordEncoder.encode(request.getPassword()));
-                providerRepo.save(p);
-                log.info("Migrated plain text password for provider: {}", p.getEmail());
             }
 
             if (!p.getEmailVerified()) {
@@ -334,8 +305,7 @@ public class AuthService {
     public AuthResponse sendPasswordResetOTP(String email) {
         // Check if user exists
         boolean userExists = customerRepo.findByEmail(email).isPresent() ||
-                providerRepo.findByEmail(email).isPresent() ||
-                adminRepo.findByEmail(email).isPresent();
+                providerRepo.findByEmail(email).isPresent();
 
         if (!userExists) {
             return AuthResponse.builder()
@@ -368,11 +338,11 @@ public class AuthService {
                     .build();
         }
 
-        // Update password for customer, provider or admin
+        // Update password for customer or provider
         Optional<Customer> customer = customerRepo.findByEmail(email);
         if (customer.isPresent()) {
             Customer c = customer.get();
-            c.setPassword(passwordEncoder.encode(newPassword));
+            c.setPassword(newPassword); // In production, hash this!
             customerRepo.save(c);
 
             return AuthResponse.builder()
@@ -384,20 +354,8 @@ public class AuthService {
         Optional<Provider> provider = providerRepo.findByEmail(email);
         if (provider.isPresent()) {
             Provider p = provider.get();
-            p.setPassword(passwordEncoder.encode(newPassword));
+            p.setPassword(newPassword); // In production, hash this!
             providerRepo.save(p);
-
-            return AuthResponse.builder()
-                    .success(true)
-                    .message("Password reset successful. You can now login with your new password.")
-                    .build();
-        }
-
-        Optional<Team.C.Service.Spot.model.Admin> admin = adminRepo.findByEmail(email);
-        if (admin.isPresent()) {
-            Team.C.Service.Spot.model.Admin a = admin.get();
-            a.setPassword(passwordEncoder.encode(newPassword));
-            adminRepo.save(a);
 
             return AuthResponse.builder()
                     .success(true)

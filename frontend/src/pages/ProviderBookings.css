@@ -169,16 +169,6 @@
   box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
 }
 
-.share-location-btn {
-  background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%);
-  color: white;
-}
-
-.share-location-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-}
-
 .no-bookings {
   text-align: center;
   color: #999;
