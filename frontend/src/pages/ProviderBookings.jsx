@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import "./ProviderBookings.css";
-import { FaClock, FaCalendarAlt, FaUserTie, FaCheckCircle, FaTimesCircle, FaUserCircle } from "react-icons/fa";
+import { FaClock, FaCalendarAlt, FaUserTie, FaCheckCircle, FaTimesCircle, FaUserCircle, FaTruck, FaTools } from "react-icons/fa";
 
 export default function ProviderBookings() {
 
@@ -53,12 +53,25 @@ export default function ProviderBookings() {
     if (!confirm) return;
 
     try {
-      await axios.put(`http://localhost:8080/booking/cancel/${id}`);
+      await axios.put(`http://localhost:8080/booking/cancel/${id}`, { cancelledBy: "PROVIDER" });
       alert("Booking Rejected!");
       fetchBookings();
     } catch (error) {
       console.error("Error rejecting booking:", error);
       alert("Failed to reject booking");
+    }
+  };
+
+  const updateBookingStatus = async (id, newStatus) => {
+    try {
+      await axios.put(`http://localhost:8080/booking/${id}`, {
+        status: newStatus
+      });
+      alert(`Status updated to ${newStatus}`);
+      fetchBookings();
+    } catch (error) {
+      console.error(`Error updating status to ${newStatus}:`, error);
+      alert(`Failed to update status to ${newStatus}`);
     }
   };
 
@@ -109,14 +122,14 @@ export default function ProviderBookings() {
                 <div className="customer-profile-section">
                   <div className="customer-avatar">
                     {booking.customerProfileImage ? (
-                      <img 
-                        src={booking.customerProfileImage} 
-                        alt="Customer" 
-                        className="customer-profile-img" 
+                      <img
+                        src={booking.customerProfileImage}
+                        alt="Customer"
+                        className="customer-profile-img"
                         onError={(e) => {
                           e.target.style.display = 'none';
                           e.target.onerror = null;
-                        }} 
+                        }}
                       />
                     ) : (
                       <FaUserCircle size={50} color="#0A4D68" />
@@ -136,23 +149,41 @@ export default function ProviderBookings() {
                 <div className="action-buttons">
                   {booking.status === "Pending" && (
                     <>
-                      <button 
-                        className="accept-btn" 
+                      <button
+                        className="accept-btn"
                         onClick={() => acceptBooking(booking.id)}
                       >
                         <FaCheckCircle /> Accept
                       </button>
-                      <button 
-                        className="reject-btn" 
+                      <button
+                        className="reject-btn"
                         onClick={() => rejectBooking(booking.id)}
                       >
                         <FaTimesCircle /> Reject
                       </button>
                     </>
                   )}
-                  {booking.status === "Accepted" && (
-                    <button 
-                      className="complete-btn" 
+                  {(booking.status === "Accepted" || booking.status === "Confirmed") && (
+                    <>
+                      <button
+                        className="enroute-btn"
+                        onClick={() => updateBookingStatus(booking.id, "En Route")}
+                      >
+                        <FaTruck /> En Route
+                      </button>
+                    </>
+                  )}
+                  {booking.status === "En Route" && (
+                    <button
+                      className="inprogress-btn"
+                      onClick={() => updateBookingStatus(booking.id, "In Progress")}
+                    >
+                      <FaTools /> Start Service
+                    </button>
+                  )}
+                  {(booking.status === "Accepted" || booking.status === "Confirmed" || booking.status === "In Progress") && (
+                    <button
+                      className="complete-btn"
                       onClick={() => completeBooking(booking.id)}
                     >
                       <FaCheckCircle /> Mark Complete
